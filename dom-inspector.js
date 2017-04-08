@@ -8,8 +8,10 @@
 ***************************************************************************************************/
 const domPanelId = "cz.vutbr.fit.dom-panel";
 const bodyDivId = "cz.vutbr.fit.body-panel";
+const domTableId = "cz.vutbr.fit.dom-table";
 
 /**
+ * Enumerate nodetypes for easier code readability / avoid magic constants
  * Source: http://code.stephenmorley.org/javascript/dom-nodetype-constants/
  */
 var NodeTypes = {
@@ -37,12 +39,12 @@ var NodeTypes = {
  */
 class Node {
     	
-   	constructor(bodyElement, parent, children) {
-   		this.parent = parent;
-   		this.children = children;
-   		this.bodyElement = bodyElement;
-   		this.visible = false;
-   		this.domElement = null;
+   	constructor(parent, children, bodyElement, domElement) {
+   		this.parent 		= parent;
+   		this.children 		= children;
+   		this.bodyElement 	= bodyElement;
+   		this.domElement 	= domElement;
+   		this.visible 		= false;
    	}  	
 
    	//Visibility setter
@@ -54,6 +56,11 @@ class Node {
    	isVisible() {
    		return this.visible;
    	}
+
+   	//Add Element to the Dom panel
+   	appendToDom(elem) {
+   		this.parent.domElement.appendChild(elem);
+   	}
 }
 
 
@@ -64,9 +71,14 @@ function inspector() {
 	if (!document.getElementById(domPanelId) && !document.getElementById(bodyDivId)) {
 		applyCss();
 		[domPanel, bodyDiv] = repackSite();
-		window.alert("Site Repacked");
-		let rootNode = new Node(bodyDiv,null, []);
-		buildTree(rootNode);
+		//Create The DOM Inspector table and add it to DOM panel
+		let domTable = document.createElement('table');
+		domTable.id = domTableId;
+		domPanel.appendChild(domTable);
+
+		//
+		let rootNode = new Node(null, [],bodyDiv, domTable);
+		buildTree(rootNode, 0);
 	}
 }
 
@@ -123,12 +135,17 @@ function repackSite() {
  *
  * @return void
  */
-function buildTree(currentNode) {
+function buildTree(currentNode, level) {
+	console.log(currentNode.bodyElement.tagName);
 	var children = currentNode.bodyElement.childNodes;
 	for (let i = 0; i<children.length; i++) {
-		let newNode = new Node(children[i],currentNode,[]);
-		buildTree(newNode);
+		let tr = document.createElement('tr');
+		tr.setAttribute("data-depth",level);
+		let newNode = new Node(currentNode, [], children[i], tr);
+		newNode.appendToDom(tr);
+		buildTree(newNode, level + 1);
 	}
 }
 
-window.onload=inspector;
+inspector();
+//window.onload=inspector;
