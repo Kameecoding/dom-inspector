@@ -1,0 +1,17 @@
+
+/* style for the main panel */
+#cz\.vutbr\.fit\.dom-panel {
+	position: fixed;
+    width: 30%;
+    background-color: red;
+    height: 100%;
+    right: 0;
+    top: 0;
+}
+
+#cz\.vutbr\.fit\.body-panel {
+	position: relative;
+    width: 70%;
+    overflow: scroll;
+    background-color: green;
+}
