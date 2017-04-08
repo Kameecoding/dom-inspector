@@ -44,10 +44,13 @@ class Node {
  * Main body of the program
  */
 function inspector() {
-	applyCss();
-	[domPanel, bodyDiv] = repackSite();
-	let rootNode = new Node(bodyDiv,null, []);
-	buildTree(rootNode);
+	if (!document.getElementById(domPanelId) && !document.getElementById(bodyDivId)) {
+		applyCss();
+		[domPanel, bodyDiv] = repackSite();
+		window.alert("Site Repacked");
+		let rootNode = new Node(bodyDiv,null, []);
+		buildTree(rootNode);
+	}
 }
 
 /**
@@ -75,25 +78,26 @@ function applyCss() {
  * @return [domPanel, bodyDiv] div elements in the HTML
  */ 
 function repackSite() {
-	if (!document.getElementById(domPanelId) && !document.getElementById(bodyDivId)) {
-		var domPanel = document.createElement("div");
-	    domPanel.id=domPanelId;
+	
+	var domPanel = document.createElement("div");
+    domPanel.id=domPanelId;
 
-	    var bodyDiv = document.createElement("div");
-	    bodyDiv.id=bodyDivId;
+    var bodyDiv = document.createElement("div");
+    bodyDiv.id=bodyDivId;
 
-	    var bodyElements = document.querySelectorAll( 'body > *' );
-	    document.body.appendChild(bodyDiv);
-	    for (i=0;i<bodyElements.length; i++) {
-	        var currentElement = bodyElements[i];
-	        var type = currentElement.nodeType;
-	        //Only NodeTypes of Element,Text and Document
-	        if (type == 1 || type == 3 || type == 9) {
-	            bodyDiv.appendChild(currentElement);
-	        }
-	    }
-	    document.body.appendChild(domPanel);
-	}
+    var bodyElements = document.querySelectorAll( 'body > *' );
+    document.body.appendChild(bodyDiv);
+    for (i=0;i<bodyElements.length; i++) {
+        var currentElement = bodyElements[i];
+        var type = currentElement.nodeType;
+        //Only NodeTypes of Element,Text and Document
+        if (type == 1 || type == 3 || type == 9) {
+            bodyDiv.appendChild(currentElement);
+        }
+    }
+    document.body.appendChild(domPanel);
+
+    return [domPanel,bodyDiv];
 }
 
 /**
@@ -101,7 +105,7 @@ function repackSite() {
  *
  * @return void
  */
-function buildTree(var currentNode) {
+function buildTree(currentNode) {
 	var children = currentNode.bodyElement.childNodes;
 	for (let i = 0; i<children.length; i++) {
 		let newNode = new Node(children[i],currentNode,[]);
