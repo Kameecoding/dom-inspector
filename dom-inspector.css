@@ -2,11 +2,11 @@
 #cz\.vutbr\.fit\.dom-panel {
 	position: fixed;
     width: 30%;
-    height: 100%;
     right: 0;
     top: 0;
-    z-index: -1;
+    bottom: 0;
     overflow: scroll;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 /* style for the main panel */
@@ -19,6 +19,25 @@
 #cz\.vutbr\.fit\.dom-table td {
     border: 1px solid #eee;
 }
+
+/* Color for HTML tags in inspector */
+.html {
+    color: #88129F;
+}
+
+.special {
+    color: #BCBCBD;
+}
+
+/* Color for HTML element attributes*/
+.attribute {
+    color: #994500;
+}
+
+.attributeValue {
+    color: #1A1AA6;
+}
+
 
 .collapse .toggle {
     background: url("http://mleibman.github.com/SlickGrid/images/collapse.gif");
