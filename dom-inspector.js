@@ -14,14 +14,14 @@ const domListId = "cz.vutbr.fit.dom-list";
 /* CSS and HTML constants */ 
 const offset = 15;
 const innerOffset = 9;
-const start = document.createElement('span'); 
+/*const start = document.createElement('span'); 
 	  start.textContent = "<";
 const end = document.createElement('span');
 	  end.textContent = ">";
 const singleEnd = document.createElement('span');
 	  singleEnd.textContent = "/>";
 const endStart = document.createElement('span');
-	  endStart.textContent = "</";
+	  endStart.textContent = "</";*/
 
 /**
  * Enumerate nodetypes for easier code readability / avoid magic constants
@@ -76,11 +76,17 @@ class TreeNode {
 
     //Add Element to the Dom panel
     appendToDom(elem) {
-        if (this.parent.ul) {
-            this.parent.ul.appendChild(elem);
+        //Special case when building rootNode
+        if (this.parent == null) {
+            domList.appendChild(elem);
         } else {
-            this.parent.domElement.appendChild(elem);    
+            if (this.parent.ul) {
+                this.parent.ul.appendChild(elem);
+            } else {
+                this.parent.domElement.appendChild(elem);    
+            }
         }
+        
     }
 
     getParentOffset() {
@@ -95,14 +101,15 @@ class TreeNode {
 function inspector() {
     if (!document.getElementById(domPanelId) && !document.getElementById(bodyDivId)) {
         applyCss();
-        [domPanel, bodyDiv] = repackSite();
+        repackSite();
         //Create The DOM Inspector table and add it to DOM panel
-        let domList = document.createElement('ul');
-        domList.id = domListId;
+        domList = document.createElement('ul');
         domPanel.appendChild(domList);
-
+        domList.id = domListId;
+        domList.className='treeView';
         //Build tree of nodes
-        let rootNode = new TreeNode(null, [],bodyDiv, domList);
+        let rootNode = new TreeNode(null, [],document.documentElement, null);
+        buildElement(rootNode);
         buildTree(rootNode);
     }
 }
@@ -129,31 +136,24 @@ function applyCss() {
  * Repackage the body content of the HTML page into the bodyDiv and the insepctor part into
  * the dom panel
  * 
- * @return [domPanel, bodyDiv] div elements in the HTML
  */ 
 function repackSite() {
     
-    var domPanel = document.createElement("div");
+    domPanel = document.createElement("div");
     domPanel.id=domPanelId;
 
     var bodyElements = document.querySelectorAll( 'body > *' );
-    var bodyDiv = document.body.cloneNode(true);
+    bodyDiv = document.body.cloneNode(true);
     bodyDiv.id=bodyDivId;
     document.body.innerText = "";
     document.body.appendChild(bodyDiv);
     bodyDiv.outerHTML = bodyDiv.outerHTML.replace(/body/g,"div");
     for (i=0;i<bodyElements.length; i++) {
         var currentElement = bodyElements[i];
-        var type = currentElement.nodeType;
-        //Only NodeTypes of Element,Text and Document
-        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.TEXT_NODE 
-                || type == NodeTypes.DOCUMENT_NODE) {
-            bodyDiv.appendChild(currentElement);
-        }
+        bodyDiv.appendChild(currentElement);
     }
     document.body.appendChild(domPanel);
 
-    return [domPanel,bodyDiv];
 }
 
 /**
@@ -164,32 +164,28 @@ function repackSite() {
  * @return void
  */
 function buildTree(currentNode) {
-    var children = currentNode.bodyElement.childNodes;
+    if (currentNode.bodyElement === document.body) {
+        buildTree2(currentNode,bodyDiv.childNodes);
+        return;
+    }
+    buildTree2(currentNode,currentNode.bodyElement.childNodes);
+    
+}
+
+function buildTree2(currentNode,children) {
+
     for (let i = 0; i<children.length; i++) {
         //create node in the tree
-        if (children[i].nodeType == NodeTypes.TEXT_NODE && children[i].textContent.trim() == "") {
-            continue;
-        }
         let newNode = new TreeNode(currentNode, [], children[i], null);
         var type = newNode.bodyElement.nodeType;
         if (type == NodeTypes.ELEMENT_NODE 
                 || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
-        	let call = buildElement(newNode);
+            buildElement(newNode);
             //Recursive call
-            if (call) {
+            if (childrenCount(newNode.bodyElement) > 0) {
                 buildTree(newNode);
             }
         }
-    }
-    if (currentNode.ul) {
-    	let li = document.createElement('li');
-    	currentNode.ul.appendChild(li);
-    	li.appendChild(endStart.cloneNode(true));
-    	let tag = document.createElement('span');
-        tag.textContent = currentNode.bodyElement.tagName.toLowerCase();;
-        tag.className="html";
-        li.appendChild(tag);
-        li.appendChild(end.cloneNode(true));
     }
 }
 
@@ -204,15 +200,12 @@ function buildElement(newNode) {
     newNode.appendToDom(li);
     newNode.domElement = li;
     
-
     var type = newNode.bodyElement.nodeType;
     if (type == NodeTypes.TEXT_NODE) {
-        let span = document.createElement('span');
-        li.appendChild(span);
-        span.textContent = newNode.bodyElement.textContent;
+        li.textContent = '#text'; 
+        li.className="html";
         return false;
     } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) { 
-        li.appendChild(start.cloneNode(true));
         let tag = document.createElement('span');
         tagName = newNode.bodyElement.tagName.toLowerCase();
         tag.textContent = tagName;
@@ -221,55 +214,49 @@ function buildElement(newNode) {
        
         //Add attributes and values
         let atts = newNode.bodyElement.attributes;
-        if (atts) {
+        if (atts && atts.length > 0) {
+            let attrList = document.createElement('ul');
+            li.appendChild(attrList);
             for (let i = 0; i < atts.length; i++){
                 let att = atts[i];
-                //li.textContent += ' ';
-                let attSpan = document.createElement('span');
-                li.appendChild(attSpan);
-                attSpan.textContent = ' ' + att.nodeName + '=';
-                attSpan.className = "attribute";
-                //li.textContent += '=' 
-                let attValSpan = document.createElement('span');
+                let attrib = document.createElement('li');
+                attrList.appendChild(attrib);
+                attrib.textContent = att.nodeName;
+                attrib.className = "attribute";
+                if (att.nodeValue && att.nodeValue.trim() != "") {
+                    attrib.textContent += '=' + att.nodeValue.trim();
+                }
+                /*let attValSpan = document.createElement('span');
                 li.appendChild(attValSpan);
-                attValSpan.textContent = '"' + att.nodeValue + '"';
-                attValSpan.className = "attributeValue";
+                attValSpan.textContent = '"' +  + '"';
+                attValSpan.className = "attributeValue";*/
             }
         }
-
-
-        if (newNode.bodyElement.childNodes.length == 1 
-                && newNode.bodyElement.childNodes[0].nodeType == NodeTypes.TEXT_NODE) {
-        	li.appendChild(end.cloneNode(true));
-            let text = document.createElement('span');
-            text.textContent += newNode.bodyElement.childNodes[0].textContent;
-            li.appendChild(text);
-            li.appendChild(endStart.cloneNode(true));
-            li.appendChild(tag.cloneNode(true));
-            li.appendChild(end.cloneNode(true));
-            return false;
-        } else if (newNode.bodyElement.childNodes.length > 1) {
-            li.appendChild(end.cloneNode(true));
+        
+        if (childrenCount(newNode.bodyElement) > 0) {
             let ul = document.createElement('ul');
             li.appendChild(ul);
+            li.className = 'collapsibleListOpen';
             newNode.setCurrentList(ul);
         } else {
-            if (newNode.ul) {
-                li.appendChild(endStart.cloneNode(true));
-                li.appendChild(tag.cloneNode(true));
-                li.appendChild(end.cloneNode(true));
-            } else{
-                let closeSpan = document.createElement('span');
-                closeSpan.textContent = '/>';
-                li.appendChild(closeSpan);
-            } 
             newNode.setCurrentList(null);
         }
 
-        
-
         return true;
     }
+}
+
+
+function childrenCount(elem) {
+    var result = 0;
+    for (var i = 0; i < elem.childNodes.length; i++) {
+        type = elem.childNodes[i].nodeType;
+        if (type == NodeTypes.ELEMENT_NODE 
+                || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+            result++;
+        }
+    }
+    return result;
 }
 
 /** Function that count occurrences of a substring in a string;
