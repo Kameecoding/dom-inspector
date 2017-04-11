@@ -96,7 +96,7 @@ class TreeNode {
     }
 
     /**
-     * Returns the last child of bodyElemnt that is of the desired type
+     * Returns the last child of bodyElement that is of the desired type
      * @return lastChild
      */
     bodyLastChild() {
@@ -118,6 +118,22 @@ class TreeNode {
 
         return lastChild;        
     }
+
+    findByBody(elem) {
+        if (!elem) return null;
+
+        if (this.bodyElement == elem) {
+            return this;
+        } else {
+            for (let i = 0; i < this.children.length; ++i) {
+                let result = this.children[i].findByBody(elem);
+                if (result) {
+                    return result;
+                }
+            }
+            return null;
+        }
+    }
 }
 
 
@@ -134,7 +150,7 @@ function inspector() {
         domList.id = domListId;
         domList.className="treeView";
         //Build tree of nodes
-        let rootNode = new TreeNode(null, [],document.documentElement, null);
+        rootNode = new TreeNode(null, [],document.documentElement, null);
         buildElement(rootNode);
         buildTree(rootNode);
     }
@@ -208,6 +224,7 @@ function buildTree2(currentNode,children) {
         if (type == NodeTypes.ELEMENT_NODE 
                 || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
             buildElement(newNode);
+            currentNode.children.push(newNode);
             //Recursive call
             if (childrenCount(newNode.bodyElement) > 0) {
                 buildTree(newNode);
@@ -229,27 +246,35 @@ function buildElement(newNode) {
     
     var type = newNode.bodyElement.nodeType;
     if (type == NodeTypes.TEXT_NODE) {
-        let tag = document.createElement("span");
+        var tag = document.createElement("span");
         tag.textContent = "#text"; 
         tag.className="html";
         li.appendChild(tag);
     } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) { 
-        let tag = document.createElement("span");
+        var tag = document.createElement("span");
         tagName = newNode.bodyElement.tagName.toLowerCase();
         tag.textContent = tagName;
         tag.className="html";
+
         li.appendChild(tag);
         let hasChildren = false;
         //Add attributes and values
         let atts = newNode.bodyElement.attributes;
+
+        if ((atts && atts.length > 0) || childrenCount(newNode.bodyElement) > 0 ) {
+            hasChildren=true;
+            var ul = document.createElement("ul");
+            li.appendChild(ul);
+            newNode.setCurrentList(ul);
+        } else {
+            newNode.setCurrentList(null);
+        }
+
         if (atts && atts.length > 0) {
-            hasChildren = true;
-            let attrList = document.createElement("ul");
-            li.appendChild(attrList);
             for (let i = 0; i < atts.length; i++){
                 let att = atts[i];
                 let attrib = document.createElement("li");
-                attrList.appendChild(attrib);
+                ul.appendChild(attrib);
                 attrib.classList.add("attribute");
 
                 let attSpan = document.createElement("span");
@@ -269,34 +294,61 @@ function buildElement(newNode) {
                 }
             }
         }
-        
-        if (childrenCount(newNode.bodyElement) > 0) {
-            hasChildren=true;
-            let ul = document.createElement("ul");
-            li.appendChild(ul);
-            newNode.setCurrentList(ul);
-        } else {
-            newNode.setCurrentList(null);
-        }
 
         if (hasChildren) {
             li.classList.add("collapsibleListOpen");
-            li.addEventListener("click",toggle);
+            li.addEventListener("click",function(event) {
+                toggle(newNode);
+                cancelEvent(event);
+            });
         }
     }
 
     if (newNode.parent && newNode.bodyElement == newNode.parent.bodyLastChild()) {
         li.classList.add("lastChild");
     }
+
+    tag.addEventListener("click",function(event) {
+        select(newNode);
+        cancelEvent(event);
+    });
+    newNode.bodyElement.addEventListener("click",function(event) {
+        select(newNode);
+        cancelEvent(event);
+    });
 }
 
 function toggle(elem) {
-    window.alert("yatta");
+    elem.ul.classList.toggle('hidden');
+    elem.domElement.classList.toggle('collapsibleListOpen');
+    elem.domElement.classList.toggle('collapsibleListClosed');
 }
+
+function select(elem) {
+    let currentSelection = rootNode.findByBody(getSelectedElement());
+    if (currentSelection) {
+        currentSelection.bodyElement.classList.remove('selected');
+        currentSelection.domElement.firstChild.classList.remove('selected');    
+    }
+    elem.bodyElement.classList.add('selected');
+    elem.domElement.firstChild.classList.add('selected');
+
+    elem.bodyElement.scrollIntoView();
+    elem.domElement.firstChild.scrollIntoView();
+    //window.alert(rootNode.bodyElement.tagName);
+}
+
+function cancelEvent(event) {
+    event.stopPropagation();
+}
+
 
 
 function childrenCount(elem) {
     var result = 0;
+    
+    //NullCheck
+    if (!elem) return result;
     for (var i = 0; i < elem.childNodes.length; i++) {
         type = elem.childNodes[i].nodeType;
         if (type == NodeTypes.ELEMENT_NODE 
@@ -305,6 +357,21 @@ function childrenCount(elem) {
         }
     }
     return result;
+}
+
+function getSelectedElement() {
+    var selected = document.getElementsByClassName('selected');
+    if (selected.length == 0) {
+        return null;
+    } else if (selected.length == 2 ) {
+        if (selected[0].classList.contains('html')) {
+            return selected[1];
+        } else {
+            return selected[0];
+        }
+    } else {
+        console.error("Invalid state more than one element is selected");
+    }
 }
 
 /** Function that count occurrences of a substring in a string;
