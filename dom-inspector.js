@@ -14,13 +14,13 @@ const domListId = "cz.vutbr.fit.dom-list";
 /* CSS and HTML constants */ 
 const offset = 15;
 const innerOffset = 9;
-/*const start = document.createElement('span'); 
+/*const start = document.createElement("span"); 
 	  start.textContent = "<";
-const end = document.createElement('span');
+const end = document.createElement("span");
 	  end.textContent = ">";
-const singleEnd = document.createElement('span');
+const singleEnd = document.createElement("span");
 	  singleEnd.textContent = "/>";
-const endStart = document.createElement('span');
+const endStart = document.createElement("span");
 	  endStart.textContent = "</";*/
 
 /**
@@ -74,7 +74,9 @@ class TreeNode {
         this.ul = elem;
     }
 
-    //Add Element to the Dom panel
+    /**
+     * Appends Element do the DOM Panel
+     */
     appendToDom(elem) {
         //Special case when building rootNode
         if (this.parent == null) {
@@ -92,6 +94,30 @@ class TreeNode {
     getParentOffset() {
     	return this.parent.domElement.style.paddingLeft;
     }
+
+    /**
+     * Returns the last child of bodyElemnt that is of the desired type
+     * @return lastChild
+     */
+    bodyLastChild() {
+        let lastChild = null;
+        let children = null;
+        if (this.bodyElement == document.body) {
+            children = this.bodyElement.firstChild.childNodes;
+        } else {
+            children = this.bodyElement.childNodes;    
+        }
+        
+        for (let i = 0; i < children.length; i++) {
+            type = this.bodyElement.nodeType;
+            if (type == NodeTypes.ELEMENT_NODE 
+                || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+                lastChild = children[i];
+            }
+        }
+
+        return lastChild;        
+    }
 }
 
 
@@ -103,10 +129,10 @@ function inspector() {
         applyCss();
         repackSite();
         //Create The DOM Inspector table and add it to DOM panel
-        domList = document.createElement('ul');
+        domList = document.createElement("ul");
         domPanel.appendChild(domList);
         domList.id = domListId;
-        domList.className='treeView';
+        domList.className="treeView";
         //Build tree of nodes
         let rootNode = new TreeNode(null, [],document.documentElement, null);
         buildElement(rootNode);
@@ -120,14 +146,14 @@ function inspector() {
  * @return void
  */
 function applyCss() {
-    var cssId = 'cz.vutbr.fit.css';
+    var cssId = "cz.vutbr.fit.css";
     if (!document.getElementById(cssId)) {
-        var head  = document.getElementsByTagName('head')[0];
-        var link  = document.createElement('link');
+        var head  = document.getElementsByTagName("head")[0];
+        var link  = document.createElement("link");
         link.id   = cssId;
-        link.rel  = 'stylesheet';
-        link.type = 'text/css';
-        link.href = 'dom-inspector.css';
+        link.rel  = "stylesheet";
+        link.type = "text/css";
+        link.href = "dom-inspector.css";
         head.appendChild(link);
     }
 }
@@ -142,7 +168,7 @@ function repackSite() {
     domPanel = document.createElement("div");
     domPanel.id=domPanelId;
 
-    var bodyElements = document.querySelectorAll( 'body > *' );
+    var bodyElements = document.querySelectorAll( "body > *" );
     bodyDiv = document.body.cloneNode(true);
     bodyDiv.id=bodyDivId;
     document.body.innerText = "";
@@ -165,7 +191,8 @@ function repackSite() {
  */
 function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
-        buildTree2(currentNode,bodyDiv.childNodes);
+        buildTree2(currentNode,document.body.firstChild.childNodes);
+        currentNode.domElement.classList.add("collapsibleListOpen");
         return;
     }
     buildTree2(currentNode,currentNode.bodyElement.childNodes);
@@ -196,54 +223,75 @@ function buildTree2(currentNode,children) {
  * @return boolean returns true if child nodes need to be further processed
  */
 function buildElement(newNode) {
-	let li = document.createElement('li');
+	let li = document.createElement("li");
     newNode.appendToDom(li);
     newNode.domElement = li;
     
     var type = newNode.bodyElement.nodeType;
     if (type == NodeTypes.TEXT_NODE) {
-        li.textContent = '#text'; 
-        li.className="html";
-        return false;
+        let tag = document.createElement("span");
+        tag.textContent = "#text"; 
+        tag.className="html";
+        li.appendChild(tag);
     } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) { 
-        let tag = document.createElement('span');
+        let tag = document.createElement("span");
         tagName = newNode.bodyElement.tagName.toLowerCase();
         tag.textContent = tagName;
         tag.className="html";
         li.appendChild(tag);
-       
+        let hasChildren = false;
         //Add attributes and values
         let atts = newNode.bodyElement.attributes;
         if (atts && atts.length > 0) {
-            let attrList = document.createElement('ul');
+            hasChildren = true;
+            let attrList = document.createElement("ul");
             li.appendChild(attrList);
             for (let i = 0; i < atts.length; i++){
                 let att = atts[i];
-                let attrib = document.createElement('li');
+                let attrib = document.createElement("li");
                 attrList.appendChild(attrib);
-                attrib.textContent = att.nodeName;
-                attrib.className = "attribute";
+                attrib.classList.add("attribute");
+
+                let attSpan = document.createElement("span");
+                attrib.appendChild(attSpan);
+                attSpan.textContent = att.nodeName + '=';
+                attSpan.className = "attribute"; 
+
                 if (att.nodeValue && att.nodeValue.trim() != "") {
-                    attrib.textContent += '=' + att.nodeValue.trim();
+                    let attValSpan = document.createElement("span");
+                    attrib.appendChild(attValSpan);
+                    attValSpan.textContent = att.nodeValue;
+                    attValSpan.classList.add("attributeValue");
                 }
-                /*let attValSpan = document.createElement('span');
-                li.appendChild(attValSpan);
-                attValSpan.textContent = '"' +  + '"';
-                attValSpan.className = "attributeValue";*/
+
+                if (i == atts.length -1 && childrenCount(newNode.bodyElement) == 0) {
+                    attrib.classList.add("lastChild");
+                }
             }
         }
         
         if (childrenCount(newNode.bodyElement) > 0) {
-            let ul = document.createElement('ul');
+            hasChildren=true;
+            let ul = document.createElement("ul");
             li.appendChild(ul);
-            li.className = 'collapsibleListOpen';
             newNode.setCurrentList(ul);
         } else {
             newNode.setCurrentList(null);
         }
 
-        return true;
+        if (hasChildren) {
+            li.classList.add("collapsibleListOpen");
+            li.addEventListener("click",toggle);
+        }
     }
+
+    if (newNode.parent && newNode.bodyElement == newNode.parent.bodyLastChild()) {
+        li.classList.add("lastChild");
+    }
+}
+
+function toggle(elem) {
+    window.alert("yatta");
 }
 
 
