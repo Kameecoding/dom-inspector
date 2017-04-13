@@ -151,7 +151,7 @@ function inspector() {
         domList.className="treeView";
         //Build tree of nodes
         rootNode = new TreeNode(null, [],document.documentElement, null);
-        buildElement(rootNode);
+        buildElementGUI(rootNode);
         buildTree(rootNode);
     }
 }
@@ -223,7 +223,7 @@ function buildTree2(currentNode,children) {
         var type = newNode.bodyElement.nodeType;
         if (type == NodeTypes.ELEMENT_NODE 
                 || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
-            buildElement(newNode);
+            buildElementGUI(newNode);
             currentNode.children.push(newNode);
             //Recursive call
             if (childrenCount(newNode.bodyElement) > 0) {
@@ -239,7 +239,7 @@ function buildTree2(currentNode,children) {
  * @param newNode Node created while building tree
  * @return boolean returns true if child nodes need to be further processed
  */
-function buildElement(newNode) {
+function buildElementGUI(newNode) {
 	let li = document.createElement("li");
     newNode.appendToDom(li);
     newNode.domElement = li;
@@ -318,6 +318,40 @@ function buildElement(newNode) {
     });
 }
 
+function buildContextMenu(newNode, tag) {
+    if (type == NodeTypes.TEXT_NODE) {
+        let contextDiv = document.createElement("div");
+        tag.appendChild(contextDiv);
+        let contextList = document.createElement("ul");
+        contextDiv.appendChild(contextList);
+        let menu = document.createElement("li");
+        contextList.appendChild(menu);
+        let span = document.createElement("span");
+        span.textContent="Edit Text";
+        contextDiv.classList.add("context-menu");
+    } else if (type == NodeTypes.ELEMENT_NODE) {
+        let contextDiv = document.createElement("div");
+        tag.appendChild(contextDiv);
+        let contextList = document.createElement("ul");
+        contextDiv.appendChild(contextList);
+        let menu_1 = document.createElement("li");
+        contextList.appendChild("menu_1")
+        let span_1 = document.createElement("span");
+        menu_1.appendChild(span_1);
+        span_1.textContent="Set ID";
+        let menu_2 = document.createElement("li");
+        contextList.appendChild(menu_2);
+        let span_2 = document.createElement("span");
+        menu_2.appendChild(span_2);
+        span_2.textContent = "Add Class";
+        let menu_3 = document.createElement("li");
+        contextList.appendChild(menu_3);
+        let span_3 = document.createElement("span");
+        menu_3.appendChild(span_3);
+    }
+}
+
+
 function toggle(elem) {
     elem.ul.classList.toggle('hidden');
     elem.domElement.classList.toggle('collapsibleListOpen');
@@ -372,35 +406,6 @@ function getSelectedElement() {
     } else {
         console.error("Invalid state more than one element is selected");
     }
-}
-
-/** Function that count occurrences of a substring in a string;
- * @param {String} string               The string
- * @param {String} subString            The sub string to search for
- * @param {Boolean} [allowOverlapping]  Optional. (Default:false)
- *
- * @author Vitim.us https://gist.github.com/victornpb/7736865
- * @see Unit Test https://jsfiddle.net/Victornpb/5axuh96u/
- * @see http://stackoverflow.com/questions/4009756/how-to-count-string-occurrence-in-string/7924240#7924240
- */
-function occurrences(string, subString, allowOverlapping) {
-
-    string += "";
-    subString += "";
-    if (subString.length <= 0) return (string.length + 1);
-
-    var n = 0,
-        pos = 0,
-        step = allowOverlapping ? 1 : subString.length;
-
-    while (true) {
-        pos = string.indexOf(subString, pos);
-        if (pos >= 0) {
-            ++n;
-            pos += step;
-        } else break;
-    }
-    return n;
 }
 
 //inspector();
