@@ -4,14 +4,14 @@
  * file: dom-inspector.js
  */
 /***************************************************************************************************
-************************************** GLOBAL CONSTANTS ********************************************
-***************************************************************************************************/
+ ************************************** GLOBAL CONSTANTS ********************************************
+ ***************************************************************************************************/
 /* IDs */
 const domPanelId = "cz.vutbr.fit.dom-panel";
 const bodyDivId = "cz.vutbr.fit.main-panel";
 const domListId = "cz.vutbr.fit.dom-list";
 
-/* CSS and HTML constants */ 
+/* CSS and HTML constants */
 const offset = 15;
 const innerOffset = 9;
 /*const start = document.createElement("span"); 
@@ -28,37 +28,37 @@ const endStart = document.createElement("span");
  * Source: http://code.stephenmorley.org/javascript/dom-nodetype-constants/
  */
 var NodeTypes = {
-    ELEMENT_NODE                :  1,
-    ATTRIBUTE_NODE              :  2,
-    TEXT_NODE                   :  3,
-    CDATA_SECTION_NODE          :  4,
-    ENTITY_REFERENCE_NODE       :  5,
-    ENTITY_NODE                 :  6,
-    PROCESSING_INSTRUCTION_NODE :  7,
-    COMMENT_NODE                :  8,
-    DOCUMENT_NODE               :  9,
-    DOCUMENT_TYPE_NODE          : 10,
-    DOCUMENT_FRAGMENT_NODE      : 11,
-    NOTATION_NODE               : 12
+    ELEMENT_NODE: 1,
+    ATTRIBUTE_NODE: 2,
+    TEXT_NODE: 3,
+    CDATA_SECTION_NODE: 4,
+    ENTITY_REFERENCE_NODE: 5,
+    ENTITY_NODE: 6,
+    PROCESSING_INSTRUCTION_NODE: 7,
+    COMMENT_NODE: 8,
+    DOCUMENT_NODE: 9,
+    DOCUMENT_TYPE_NODE: 10,
+    DOCUMENT_FRAGMENT_NODE: 11,
+    NOTATION_NODE: 12
 };
 
 /***************************************************************************************************
-*************************************** MAIN BODY **************************************************
-***************************************************************************************************/
+ *************************************** MAIN BODY **************************************************
+ ***************************************************************************************************/
 
 
 /**
  *  Class for storing DOM elements and utility functions for the GUI representation
  */
 class TreeNode {
-        
+
     constructor(parent, children, bodyElement, domElement) {
-        this.parent      = parent;
-        this.children    = children;
+        this.parent = parent;
+        this.children = children;
         this.bodyElement = bodyElement;
-        this.domElement  = domElement;
-        this.visible     = false;
-    }   
+        this.domElement = domElement;
+        this.visible = false;
+    }
 
     //Visibility setter
     setVisible(visible) {
@@ -85,14 +85,14 @@ class TreeNode {
             if (this.parent.ul) {
                 this.parent.ul.appendChild(elem);
             } else {
-                this.parent.domElement.appendChild(elem);    
+                this.parent.domElement.appendChild(elem);
             }
         }
-        
+
     }
 
     getParentOffset() {
-    	return this.parent.domElement.style.paddingLeft;
+        return this.parent.domElement.style.paddingLeft;
     }
 
     /**
@@ -105,18 +105,17 @@ class TreeNode {
         if (this.bodyElement == document.body) {
             children = this.bodyElement.firstChild.childNodes;
         } else {
-            children = this.bodyElement.childNodes;    
+            children = this.bodyElement.childNodes;
         }
-        
+
         for (let i = 0; i < children.length; i++) {
             type = this.bodyElement.nodeType;
-            if (type == NodeTypes.ELEMENT_NODE 
-                || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+            if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
                 lastChild = children[i];
             }
         }
 
-        return lastChild;        
+        return lastChild;
     }
 
     findByBody(elem) {
@@ -148,9 +147,9 @@ function inspector() {
         domList = document.createElement("ul");
         domPanel.appendChild(domList);
         domList.id = domListId;
-        domList.className="treeView";
+        domList.className = "treeView";
         //Build tree of nodes
-        rootNode = new TreeNode(null, [],document.documentElement, null);
+        rootNode = new TreeNode(null, [], document.documentElement, null);
         buildElementGUI(rootNode);
         buildTree(rootNode);
     }
@@ -164,10 +163,10 @@ function inspector() {
 function applyCss() {
     var cssId = "cz.vutbr.fit.css";
     if (!document.getElementById(cssId)) {
-        var head  = document.getElementsByTagName("head")[0];
-        var link  = document.createElement("link");
-        link.id   = cssId;
-        link.rel  = "stylesheet";
+        var head = document.getElementsByTagName("head")[0];
+        var link = document.createElement("link");
+        link.id = cssId;
+        link.rel = "stylesheet";
         link.type = "text/css";
         link.href = "dom-inspector.css";
         head.appendChild(link);
@@ -178,19 +177,19 @@ function applyCss() {
  * Repackage the body content of the HTML page into the bodyDiv and the insepctor part into
  * the dom panel
  * 
- */ 
+ */
 function repackSite() {
-    
-    domPanel = document.createElement("div");
-    domPanel.id=domPanelId;
 
-    var bodyElements = document.querySelectorAll( "body > *" );
+    domPanel = document.createElement("div");
+    domPanel.id = domPanelId;
+
+    var bodyElements = document.querySelectorAll("body > *");
     bodyDiv = document.body.cloneNode(true);
-    bodyDiv.id=bodyDivId;
+    bodyDiv.id = bodyDivId;
     document.body.innerText = "";
     document.body.appendChild(bodyDiv);
-    bodyDiv.outerHTML = bodyDiv.outerHTML.replace(/body/g,"div");
-    for (i=0;i<bodyElements.length; i++) {
+    bodyDiv.outerHTML = bodyDiv.outerHTML.replace(/body/g, "div");
+    for (i = 0; i < bodyElements.length; i++) {
         var currentElement = bodyElements[i];
         bodyDiv.appendChild(currentElement);
     }
@@ -207,22 +206,21 @@ function repackSite() {
  */
 function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
-        buildTree2(currentNode,document.body.firstChild.childNodes);
+        buildTree2(currentNode, document.body.firstChild.childNodes);
         currentNode.domElement.classList.add("collapsibleListOpen");
         return;
     }
-    buildTree2(currentNode,currentNode.bodyElement.childNodes);
-    
+    buildTree2(currentNode, currentNode.bodyElement.childNodes);
+
 }
 
-function buildTree2(currentNode,children) {
+function buildTree2(currentNode, children) {
 
-    for (let i = 0; i<children.length; i++) {
+    for (let i = 0; i < children.length; i++) {
         //create node in the tree
         let newNode = new TreeNode(currentNode, [], children[i], null);
         var type = newNode.bodyElement.nodeType;
-        if (type == NodeTypes.ELEMENT_NODE 
-                || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
             buildElementGUI(newNode);
             currentNode.children.push(newNode);
             //Recursive call
@@ -240,29 +238,29 @@ function buildTree2(currentNode,children) {
  * @return boolean returns true if child nodes need to be further processed
  */
 function buildElementGUI(newNode) {
-	let li = document.createElement("li");
+    let li = document.createElement("li");
     newNode.appendToDom(li);
     newNode.domElement = li;
-    
+
     var type = newNode.bodyElement.nodeType;
     if (type == NodeTypes.TEXT_NODE) {
         var tag = document.createElement("span");
-        tag.textContent = "#text"; 
-        tag.className="html";
+        tag.textContent = "#text";
+        tag.className = "html";
         li.appendChild(tag);
-    } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) { 
+    } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
         tagName = newNode.bodyElement.tagName.toLowerCase();
         tag.textContent = tagName;
-        tag.className="html";
+        tag.className = "html";
 
         li.appendChild(tag);
         let hasChildren = false;
         //Add attributes and values
         let atts = newNode.bodyElement.attributes;
 
-        if ((atts && atts.length > 0) || childrenCount(newNode.bodyElement) > 0 ) {
-            hasChildren=true;
+        if ((atts && atts.length > 0) || childrenCount(newNode.bodyElement) > 0) {
+            hasChildren = true;
             var ul = document.createElement("ul");
             li.appendChild(ul);
             newNode.setCurrentList(ul);
@@ -271,7 +269,7 @@ function buildElementGUI(newNode) {
         }
 
         if (atts && atts.length > 0) {
-            for (let i = 0; i < atts.length; i++){
+            for (let i = 0; i < atts.length; i++) {
                 let att = atts[i];
                 let attrib = document.createElement("li");
                 ul.appendChild(attrib);
@@ -280,7 +278,7 @@ function buildElementGUI(newNode) {
                 let attSpan = document.createElement("span");
                 attrib.appendChild(attSpan);
                 attSpan.textContent = att.nodeName + '=';
-                attSpan.className = "attribute"; 
+                attSpan.className = "attribute";
 
                 if (att.nodeValue && att.nodeValue.trim() != "") {
                     let attValSpan = document.createElement("span");
@@ -289,7 +287,7 @@ function buildElementGUI(newNode) {
                     attValSpan.classList.add("attributeValue");
                 }
 
-                if (i == atts.length -1 && childrenCount(newNode.bodyElement) == 0) {
+                if (i == atts.length - 1 && childrenCount(newNode.bodyElement) == 0) {
                     attrib.classList.add("lastChild");
                 }
             }
@@ -297,7 +295,7 @@ function buildElementGUI(newNode) {
 
         if (hasChildren) {
             li.classList.add("collapsibleListOpen");
-            li.addEventListener("click",function(event) {
+            li.addEventListener("click", function(event) {
                 toggle(newNode);
                 cancelEvent(event);
             });
@@ -308,11 +306,11 @@ function buildElementGUI(newNode) {
         li.classList.add("lastChild");
     }
 
-    tag.addEventListener("click",function(event) {
+    tag.addEventListener("click", function(event) {
         select(newNode);
         cancelEvent(event);
     });
-    newNode.bodyElement.addEventListener("click",function(event) {
+    newNode.bodyElement.addEventListener("click", function(event) {
         select(newNode);
         cancelEvent(event);
     });
@@ -327,7 +325,7 @@ function buildContextMenu(newNode, tag) {
         let menu = document.createElement("li");
         contextList.appendChild(menu);
         let span = document.createElement("span");
-        span.textContent="Edit Text";
+        span.textContent = "Edit Text";
         contextDiv.classList.add("context-menu");
     } else if (type == NodeTypes.ELEMENT_NODE) {
         let contextDiv = document.createElement("div");
@@ -338,7 +336,7 @@ function buildContextMenu(newNode, tag) {
         contextList.appendChild("menu_1")
         let span_1 = document.createElement("span");
         menu_1.appendChild(span_1);
-        span_1.textContent="Set ID";
+        span_1.textContent = "Set ID";
         let menu_2 = document.createElement("li");
         contextList.appendChild(menu_2);
         let span_2 = document.createElement("span");
@@ -362,7 +360,7 @@ function select(elem) {
     let currentSelection = rootNode.findByBody(getSelectedElement());
     if (currentSelection) {
         currentSelection.bodyElement.classList.remove('selected');
-        currentSelection.domElement.firstChild.classList.remove('selected');    
+        currentSelection.domElement.firstChild.classList.remove('selected');
     }
     elem.bodyElement.classList.add('selected');
     elem.domElement.firstChild.classList.add('selected');
@@ -380,13 +378,12 @@ function cancelEvent(event) {
 
 function childrenCount(elem) {
     var result = 0;
-    
+
     //NullCheck
     if (!elem) return result;
     for (var i = 0; i < elem.childNodes.length; i++) {
         type = elem.childNodes[i].nodeType;
-        if (type == NodeTypes.ELEMENT_NODE 
-                || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
             result++;
         }
     }
@@ -397,7 +394,7 @@ function getSelectedElement() {
     var selected = document.getElementsByClassName('selected');
     if (selected.length == 0) {
         return null;
-    } else if (selected.length == 2 ) {
+    } else if (selected.length == 2) {
         if (selected[0].classList.contains('html')) {
             return selected[1];
         } else {
@@ -409,4 +406,4 @@ function getSelectedElement() {
 }
 
 //inspector();
-window.onload=inspector;
+window.onload = inspector;
