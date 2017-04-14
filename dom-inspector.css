@@ -1,5 +1,5 @@
 /* style of the dom inspector panel*/
-#cz\.vutbr\.fit\.dom-panel {
+#cz\.vutbr\.fit\.xkovac36\.dom-panel {
 	position: fixed;
     width: 30%;
     right: 0;
@@ -10,13 +10,13 @@
 }
 
 /* style for the main panel */
-#cz\.vutbr\.fit\.main-panel {
+#cz\.vutbr\.fit\.xkovac36\.main-panel {
 	position: relative;
     width: 70%;
     overflow: scroll;
 }
 
-#cz\.vutbr\.fit\.dom-table td {
+#cz\.vutbr\.fit\.xkovac36\.dom-table td {
     border: 1px solid #eee;
 }
 
@@ -44,6 +44,21 @@
 
 .hidden {
     display: none;
+}
+
+.block {
+	display: block;
+}
+
+.context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 12px 0;
+  width: 240px;
+  background-color: #fff;
+  border: solid 1px #dfdfdf;
+  box-shadow: 1px 1px 2px #cfcfcf;
 }
 
 /*

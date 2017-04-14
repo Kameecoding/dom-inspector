@@ -4,24 +4,21 @@
  * file: dom-inspector.js
  */
 /***************************************************************************************************
- ************************************** GLOBAL CONSTANTS ********************************************
- ***************************************************************************************************/
+ ************************************** GLOBAL CONSTANTS *******************************************
+ **************************************************************************************************/
 /* IDs */
-const domPanelId = "cz.vutbr.fit.dom-panel";
-const bodyDivId = "cz.vutbr.fit.main-panel";
-const domListId = "cz.vutbr.fit.dom-list";
+const domPanelId = "cz.vutbr.fit.xkovac36.dom-panel";
+const bodyDivId = "cz.vutbr.fit.xkovac36.main-panel";
+const domListId = "cz.vutbr.fit.xkovac36.dom-list";
+const contextMenuId = "cz.vutbr.fit.xkovac36.context-menu";
 
-/* CSS and HTML constants */
-const offset = 15;
-const innerOffset = 9;
-/*const start = document.createElement("span"); 
-	  start.textContent = "<";
-const end = document.createElement("span");
-	  end.textContent = ">";
-const singleEnd = document.createElement("span");
-	  singleEnd.textContent = "/>";
-const endStart = document.createElement("span");
-	  endStart.textContent = "</";*/
+/* String constants */
+const editTextLabel = "Edit text";
+const addAttrLabel = "Add attribute (id and class are attributes too)";
+const editAttrNameLabel = "Edit name";
+const deleteAttrLabel = "Delete attribute";
+const editAttrValueLabel = "Edit attribute value";
+
 
 /**
  * Enumerate nodetypes for easier code readability / avoid magic constants
@@ -43,8 +40,8 @@ var NodeTypes = {
 };
 
 /***************************************************************************************************
- *************************************** MAIN BODY **************************************************
- ***************************************************************************************************/
+ *************************************** MAIN BODY *************************************************
+ **************************************************************************************************/
 
 
 /**
@@ -89,10 +86,6 @@ class TreeNode {
             }
         }
 
-    }
-
-    getParentOffset() {
-        return this.parent.domElement.style.paddingLeft;
     }
 
     /**
@@ -148,6 +141,7 @@ function inspector() {
         domPanel.appendChild(domList);
         domList.id = domListId;
         domList.className = "treeView";
+        buildContextMenu();
         //Build tree of nodes
         rootNode = new TreeNode(null, [], document.documentElement, null);
         buildElementGUI(rootNode);
@@ -197,6 +191,27 @@ function repackSite() {
 
 }
 
+function buildContextMenu(body) {
+	if (!body) {
+		console.error("No Body element received.");
+		return;
+	}
+	
+	let contextDiv = document.createElement("div");
+	contextDiv.id = contextMenuId;
+	body.appendChild(contextDiv);
+	let contextList = document.createElement("ul");
+    contextDiv.appendChild(contextList);
+    contextDiv.classList.add("context-menu");
+    let menuItem1 = document.createElement("li");
+    contextList.appendChild(menuItem1);
+    let span = document.createElement("span");
+    let menu_1 = document.createElement("li");
+    contextList.appendChild(menu_1);
+    let span_1 = document.createElement("span");
+    menu_1.appendChild(span_1);
+}
+
 /**
  * Recursive depth-first function to build out our own tree of TreeNode objects
  * 
@@ -208,7 +223,7 @@ function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
         buildTree2(currentNode, document.body.firstChild.childNodes);
         currentNode.domElement.classList.add("collapsibleListOpen");
-        return;
+        return
     }
     buildTree2(currentNode, currentNode.bodyElement.childNodes);
 
@@ -299,6 +314,17 @@ function buildElementGUI(newNode) {
                 toggle(newNode);
                 cancelEvent(event);
             });
+
+            tag.addEventListener("contextmenu",function(event) {
+		    	let menuPosition = getPosition(e);
+				let menuPositionX = menuPosition.x + "px";
+				let menuPositionY = menuPosition.y + "px";
+
+				menu.style.left = menuPositionX;
+				menu.style.top = menuPositionY;
+				menu.classList.toggle("block");
+		    	cancelEvent(event);
+		    });
         }
     }
 
@@ -314,41 +340,8 @@ function buildElementGUI(newNode) {
         select(newNode);
         cancelEvent(event);
     });
-}
 
-function buildContextMenu(newNode, tag) {
-    if (type == NodeTypes.TEXT_NODE) {
-        let contextDiv = document.createElement("div");
-        tag.appendChild(contextDiv);
-        let contextList = document.createElement("ul");
-        contextDiv.appendChild(contextList);
-        let menu = document.createElement("li");
-        contextList.appendChild(menu);
-        let span = document.createElement("span");
-        span.textContent = "Edit Text";
-        contextDiv.classList.add("context-menu");
-    } else if (type == NodeTypes.ELEMENT_NODE) {
-        let contextDiv = document.createElement("div");
-        tag.appendChild(contextDiv);
-        let contextList = document.createElement("ul");
-        contextDiv.appendChild(contextList);
-        let menu_1 = document.createElement("li");
-        contextList.appendChild("menu_1")
-        let span_1 = document.createElement("span");
-        menu_1.appendChild(span_1);
-        span_1.textContent = "Set ID";
-        let menu_2 = document.createElement("li");
-        contextList.appendChild(menu_2);
-        let span_2 = document.createElement("span");
-        menu_2.appendChild(span_2);
-        span_2.textContent = "Add Class";
-        let menu_3 = document.createElement("li");
-        contextList.appendChild(menu_3);
-        let span_3 = document.createElement("span");
-        menu_3.appendChild(span_3);
-    }
 }
-
 
 function toggle(elem) {
     elem.ul.classList.toggle('hidden');
@@ -403,6 +396,26 @@ function getSelectedElement() {
     } else {
         console.error("Invalid state more than one element is selected");
     }
+}
+
+function getPosition(e) {
+	var posx = 0;
+	var posy = 0;
+
+	if (!e) var e = window.event;
+
+	if (e.pageX || e.pageY) {
+		posx = e.pageX;
+		posy = e.pageY;
+	} else if (e.clientX || e.clientY) {
+		posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+		posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+	}
+
+	return {
+		x: posx,
+		y: posy
+	}
 }
 
 //inspector();
