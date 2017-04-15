@@ -65,11 +65,12 @@ var NodeTypes = {
  */
 class TreeNode {
 
-    constructor(parent, children, bodyElement, domElement) {
+    constructor(parent, children, bodyElement, domElement, type) {
         this.parent = parent;
         this.children = children;
         this.bodyElement = bodyElement;
         this.domElement = domElement;
+        this.type = type;
     }
 
     setList(elem) {
@@ -106,14 +107,24 @@ class TreeNode {
             children = this.bodyElement.childNodes;
         }
 
-        for (let i = 0; i < children.length; i++) {
-            type = this.bodyElement.nodeType;
-            if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
-                lastChild = children[i];
+        if (children.length > 0) {
+            for (let i = 0; i < children.length; i++) {
+                type = this.bodyElement.nodeType;
+                if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE 
+                    || type == NodeTypes.TEXT_NODE) {
+                    
+                    lastChild = children[i];
+                }
+            } 
+        } else { 
+            //Because Attributes are rendered before HTML tags an attribute can only be
+            //last child if there is no HTML tag
+            if (this.bodyElement.attributes && this.bodyElement.attributes.length > 0) {
+                return this.bodyElement.attributes[this.bodyElement.attributes.length - 1];
             }
         }
-
         return lastChild;
+
     }
 
     findByBody(elem) {
@@ -148,7 +159,7 @@ function inspector() {
         domList.className = treeView;
         buildContextMenu(document.body);
         //Build tree of nodes
-        rootNode = new TreeNode(null, [], document.documentElement, null);
+        rootNode = new TreeNode(null, [], document.documentElement, null, NodeTypes.DOCUMENT_NODE);
         buildElementGUI(rootNode);
         buildTree(rootNode);
     }
@@ -237,13 +248,22 @@ function buildTree2(currentNode, children) {
 
     for (let i = 0; i < children.length; i++) {
         //create node in the tree
-        let newNode = new TreeNode(currentNode, [], children[i], null);
-        var type = newNode.bodyElement.nodeType;
-        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+        let newNode = new TreeNode(currentNode, [], children[i], null, children[i].nodeType);
+        if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE 
+                || newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ATTRIBUTE_NODE) {
             buildElementGUI(newNode);
             currentNode.children.push(newNode);
+            //Add attributes and values
+            let atts = newNode.bodyElement.attributes;
+            if (atts && atts.length > 0) {
+                for (let i = 0; i < atts.length; i++) {
+                    let att = atts[i];
+                    let attrNode = new TreeNode(newNode, [], att, null, NodeTypes.ATTRIBUTE_NODE);
+                    buildElementGUI(attrNode);
+                }
+            }
             //Recursive call
-            if (childrenCount(newNode.bodyElement) > 0) {
+            if (nodeChildCount(newNode.bodyElement) > 0) {
                 buildTree(newNode);
             }
         }
@@ -260,84 +280,65 @@ function buildElementGUI(newNode) {
     let li = document.createElement("li");
     newNode.appendToDom(li);
     newNode.domElement = li;
+    
 
-    var type = newNode.bodyElement.nodeType;
-    if (type == NodeTypes.TEXT_NODE) {
+    if (newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
-        tag.textContent = textNodeLabel;
-        tag.className = nodeClass;
         li.appendChild(tag);
-    } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) {
-        var tag = document.createElement("span");
-        tagName = newNode.bodyElement.tagName.toLowerCase();
-        tag.textContent = tagName;
         tag.className = nodeClass;
-
-        li.appendChild(tag);
-        let hasChildren = false;
-        //Add attributes and values
-        let atts = newNode.bodyElement.attributes;
-
-        if ((atts && atts.length > 0) || childrenCount(newNode.bodyElement) > 0) {
-            hasChildren = true;
+        if (newNode.type == NodeTypes.TEXT_NODE) {
+            tag.textContent = textNodeLabel;
+        } else {
+            tagName = newNode.bodyElement.tagName.toLowerCase();
+            tag.textContent = tagName;
+        }
+        
+        if (childrenCount(newNode.bodyElement) > 0) {
             var ul = document.createElement("ul");
             li.appendChild(ul);
             newNode.setList(ul);
-        } else {
-            newNode.setList(null);
-        }
-
-        if (atts && atts.length > 0) {
-            for (let i = 0; i < atts.length; i++) {
-                let att = atts[i];
-                let attrib = document.createElement("li");
-                ul.appendChild(attrib);
-                attrib.classList.add(attribute);
-
-                let attSpan = document.createElement("span");
-                attrib.appendChild(attSpan);
-                attSpan.textContent = att.nodeName + '=';
-                attSpan.classList.add(attribute);
-
-                if (att.nodeValue && att.nodeValue.trim() != "") {
-                    let attValSpan = document.createElement("span");
-                    attrib.appendChild(attValSpan);
-                    attValSpan.textContent = att.nodeValue;
-                    attValSpan.classList.add(attributeValue);
-                }
-
-                if (i == atts.length - 1 && childrenCount(newNode.bodyElement) == 0) {
-                    attrib.classList.add(lastChildClass);
-                }
-            }
-        }
-
-        if (hasChildren) {
             li.classList.add(collapsibleListOpen);
             li.addEventListener("click", function(event) {
                 toggle(newNode);
                 cancelEvent(event);
             });
+        } else {
+            newNode.setList(null);
+        }
+        
+        newNode.bodyElement.addEventListener("click", function(event) {
+            select(newNode);
+            cancelEvent(event);
+        });
+
+        tag.addEventListener("click", function(event) {
+            select(newNode);
+            cancelEvent(event);
+        });
+
+        tag.addEventListener("contextmenu",function(event) {
+            contextAction(event, tag);
+            cancelEvent(event);
+        });
+    } else if (newNode.type == NodeTypes.ATTRIBUTE_NODE) {
+        li.classList.add(attribute);
+        let attSpan = document.createElement("span");
+        li.appendChild(attSpan);
+        let att = newNode.bodyElement;
+        attSpan.textContent = att.nodeName + '=';
+        attSpan.classList.add(attribute);
+
+        if (att.nodeValue && att.nodeValue.trim() != "") {
+            let attValSpan = document.createElement("span");
+            li.appendChild(attValSpan);
+            attValSpan.textContent = att.nodeValue;
+            attValSpan.classList.add(attributeValue);
         }
     }
 
     if (newNode.parent && newNode.bodyElement == newNode.parent.bodyLastChild()) {
         li.classList.add(lastChildClass);
     }
-
-    tag.addEventListener("click", function(event) {
-        select(newNode);
-        cancelEvent(event);
-    });
-    newNode.bodyElement.addEventListener("click", function(event) {
-        select(newNode);
-        cancelEvent(event);
-    });
-
-    tag.addEventListener("contextmenu",function(event) {
-    	contextAction(event, tag);
-    	cancelEvent(event);
-	});
 }
 
 function contextAction(event, newNode) {
@@ -442,13 +443,18 @@ function isElementInViewport (el) {
 
 
 function childrenCount(elem) {
+    return nodeChildCount(elem) + (elem.attributes ? elem.attributes.length : 0);
+}
+
+function nodeChildCount(elem) {
     var result = 0;
 
     //NullCheck
     if (!elem) return result;
     for (var i = 0; i < elem.childNodes.length; i++) {
         type = elem.childNodes[i].nodeType;
-        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE 
+                || type == NodeTypes.TEXT_NODE) {
             result++;
         }
     }
