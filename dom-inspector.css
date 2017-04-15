@@ -21,36 +21,96 @@
 }
 
 /* Color for HTML tags in inspector */
-.html {
+.cz\.vutbr\.fit\.xkovac36\.node {
     color: #88129F;
 }
 
-.special {
+.cz\.vutbr\.fit\.xkovac36\.special {
     color: #BCBCBD;
 }
 
 /* Color for HTML element attributes*/
-.attribute {
+.cz\.vutbr\.fit\.xkovac36\.attribute {
     color: #994500;
 }
 
-.attributeValue {
+.cz\.vutbr\.fit\.xkovac36\.attributeValue {
     color: #1A1AA6;
 }
 
-.selected {
+.cz\.vutbr\.fit\.xkovac36\.selected {
     background-color: #A0C5E8;
 }
 
-.hidden {
-    display: none;
+.cz\.vutbr\.fit\.xkovac36\.hidden {
+    display: none !important;
 }
 
-.block {
-	display: block;
+.cz\.vutbr\.fit\.xkovac36\.block {
+	display: block !important;
 }
 
-.context-menu {
+/*
+ Based on: http://code.stephenmorley.org/javascript/collapsible-lists/
+*/
+.cz\.vutbr\.fit\.xkovac36\.treeView {
+  -moz-user-select:none;
+  position:relative;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView ul {
+  margin:0 0 0 -1.5em;
+  padding:0 0 0 1.5em;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView ul ul {
+  background:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-contents.png') repeat-y left;
+}
+
+ul {
+  display: block;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li.cz\.vutbr\.fit\.xkovac36\.lastChild > ul {
+  background-image:none;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li {
+  margin:0;
+  padding:0;
+  background:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-root.png') no-repeat top left;
+  list-style-position:inside;
+  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button.png');
+  cursor:auto;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li .cz\.vutbr\.fit\.xkovac36\.collapsibleListOpen {
+  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-open.png');
+  cursor:pointer;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li .cz\.vutbr\.fit\.xkovac36\.collapsibleListClosed {
+  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-closed.png');
+  cursor:pointer;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li li {
+  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item.png');
+  padding-left:1.5em;
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li.cz\.vutbr\.fit\.xkovac36\.lastChild {
+  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last.png');
+}
+
+.cz\.vutbr\.fit\.xkovac36\.treeView li.cz\.vutbr\.fit\.xkovac36\.collapsibleListOpen.cz\.vutbr\.fit\.xkovac36\.lastChild {
+  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last-open.png');
+}
+
+/*
+ 	Based on: https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
+ */
+.cz\.vutbr\.fit\.xkovac36\.context-menu {
   display: none;
   position: absolute;
   z-index: 10;
@@ -61,59 +121,29 @@
   box-shadow: 1px 1px 2px #cfcfcf;
 }
 
-/*
- Based on: http://code.stephenmorley.org/javascript/collapsible-lists/
-*/
-.treeView{
-  -moz-user-select:none;
-  position:relative;
+.context-menu__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.treeView ul{
-  margin:0 0 0 -1.5em;
-  padding:0 0 0 1.5em;
-}
-
-.treeView ul ul{
-  background:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-contents.png') repeat-y left;
-}
-
-ul {
+.context-menu li {
   display: block;
+  margin-bottom: 4px;
 }
 
-.treeView li.lastChild > ul{
-  background-image:none;
+.context-menu li.last-child {
+  margin-bottom: 0;
 }
 
-.treeView li{
-  margin:0;
-  padding:0;
-  background:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-root.png') no-repeat top left;
-  list-style-position:inside;
-  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button.png');
-  cursor:auto;
+.context-menu__link {
+  display: block;
+  padding: 4px 12px;
+  color: #0066aa;
+  text-decoration: none;
 }
 
-.treeView li.collapsibleListOpen{
-  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-open.png');
-  cursor:pointer;
-}
-
-.treeView li.collapsibleListClosed{
-  list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-closed.png');
-  cursor:pointer;
-}
-
-.treeView li li{
-  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item.png');
-  padding-left:1.5em;
-}
-
-.treeView li.lastChild{
-  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last.png');
-}
-
-.treeView li.collapsibleListOpen.lastChild{
-  background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last-open.png');
+.context-menu__link:hover {
+  color: #fff;
+  background-color: #0066aa;
 }

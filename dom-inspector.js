@@ -12,12 +12,28 @@ const bodyDivId = "cz.vutbr.fit.xkovac36.main-panel";
 const domListId = "cz.vutbr.fit.xkovac36.dom-list";
 const contextMenuId = "cz.vutbr.fit.xkovac36.context-menu";
 
-/* String constants */
+/* GUI string constants */
 const editTextLabel = "Edit text";
 const addAttrLabel = "Add attribute (id and class are attributes too)";
 const editAttrNameLabel = "Edit name";
 const deleteAttrLabel = "Delete attribute";
 const editAttrValueLabel = "Edit attribute value";
+const textNodeLabel = "#text";
+
+/* prefixed CSS constants to avoid duplicates */
+const nodeClass = "cz.vutbr.fit.xkovac36.node";
+const special = "cz.vutbr.fit.xkovac36.special";
+const attribute = "cz.vutbr.fit.xkovac36.attribute";
+const attributeValue = "cz.vutbr.fit.xkovac36.attributeValue";
+const selected = "cz.vutbr.fit.xkovac36.selected";
+const hidden = "cz.vutbr.fit.xkovac36.hidden";
+const block = "cz.vutbr.fit.xkovac36.block";
+const contextMenu = "cz.vutbr.fit.xkovac36.context-menu";
+const treeView = "cz.vutbr.fit.xkovac36.treeView";
+const collapsibleListOpen = "cz.vutbr.fit.xkovac36.collapsibleListOpen";
+const collapsibleListClosed = "cz.vutbr.fit.xkovac36.collapsibleListClosed";
+const lastChildClass = "cz.vutbr.fit.xkovac36.lastChild";
+
 
 
 /**
@@ -54,20 +70,9 @@ class TreeNode {
         this.children = children;
         this.bodyElement = bodyElement;
         this.domElement = domElement;
-        this.visible = false;
     }
 
-    //Visibility setter
-    setVisible(visible) {
-        this.visible = visible;
-    }
-
-    //Visibility getter
-    isVisible() {
-        return this.visible;
-    }
-
-    setCurrentList(elem) {
+    setList(elem) {
         this.ul = elem;
     }
 
@@ -140,8 +145,8 @@ function inspector() {
         domList = document.createElement("ul");
         domPanel.appendChild(domList);
         domList.id = domListId;
-        domList.className = "treeView";
-        buildContextMenu();
+        domList.className = treeView;
+        buildContextMenu(document.body);
         //Build tree of nodes
         rootNode = new TreeNode(null, [], document.documentElement, null);
         buildElementGUI(rootNode);
@@ -173,7 +178,6 @@ function applyCss() {
  * 
  */
 function repackSite() {
-
     domPanel = document.createElement("div");
     domPanel.id = domPanelId;
 
@@ -202,7 +206,7 @@ function buildContextMenu(body) {
 	body.appendChild(contextDiv);
 	let contextList = document.createElement("ul");
     contextDiv.appendChild(contextList);
-    contextDiv.classList.add("context-menu");
+    contextDiv.classList.add(contextMenu);
     let menuItem1 = document.createElement("li");
     contextList.appendChild(menuItem1);
     let span = document.createElement("span");
@@ -222,7 +226,7 @@ function buildContextMenu(body) {
 function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
         buildTree2(currentNode, document.body.firstChild.childNodes);
-        currentNode.domElement.classList.add("collapsibleListOpen");
+        currentNode.domElement.classList.add(collapsibleListOpen);
         return
     }
     buildTree2(currentNode, currentNode.bodyElement.childNodes);
@@ -260,14 +264,14 @@ function buildElementGUI(newNode) {
     var type = newNode.bodyElement.nodeType;
     if (type == NodeTypes.TEXT_NODE) {
         var tag = document.createElement("span");
-        tag.textContent = "#text";
-        tag.className = "html";
+        tag.textContent = textNodeLabel;
+        tag.className = nodeClass;
         li.appendChild(tag);
     } else if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
         tagName = newNode.bodyElement.tagName.toLowerCase();
         tag.textContent = tagName;
-        tag.className = "html";
+        tag.className = nodeClass;
 
         li.appendChild(tag);
         let hasChildren = false;
@@ -278,9 +282,9 @@ function buildElementGUI(newNode) {
             hasChildren = true;
             var ul = document.createElement("ul");
             li.appendChild(ul);
-            newNode.setCurrentList(ul);
+            newNode.setList(ul);
         } else {
-            newNode.setCurrentList(null);
+            newNode.setList(null);
         }
 
         if (atts && atts.length > 0) {
@@ -288,48 +292,37 @@ function buildElementGUI(newNode) {
                 let att = atts[i];
                 let attrib = document.createElement("li");
                 ul.appendChild(attrib);
-                attrib.classList.add("attribute");
+                attrib.classList.add(attribute);
 
                 let attSpan = document.createElement("span");
                 attrib.appendChild(attSpan);
                 attSpan.textContent = att.nodeName + '=';
-                attSpan.className = "attribute";
+                attSpan.classList.add(attribute);
 
                 if (att.nodeValue && att.nodeValue.trim() != "") {
                     let attValSpan = document.createElement("span");
                     attrib.appendChild(attValSpan);
                     attValSpan.textContent = att.nodeValue;
-                    attValSpan.classList.add("attributeValue");
+                    attValSpan.classList.add(attributeValue);
                 }
 
                 if (i == atts.length - 1 && childrenCount(newNode.bodyElement) == 0) {
-                    attrib.classList.add("lastChild");
+                    attrib.classList.add(lastChildClass);
                 }
             }
         }
 
         if (hasChildren) {
-            li.classList.add("collapsibleListOpen");
+            li.classList.add(collapsibleListOpen);
             li.addEventListener("click", function(event) {
                 toggle(newNode);
                 cancelEvent(event);
             });
-
-            tag.addEventListener("contextmenu",function(event) {
-		    	let menuPosition = getPosition(e);
-				let menuPositionX = menuPosition.x + "px";
-				let menuPositionY = menuPosition.y + "px";
-
-				menu.style.left = menuPositionX;
-				menu.style.top = menuPositionY;
-				menu.classList.toggle("block");
-		    	cancelEvent(event);
-		    });
         }
     }
 
     if (newNode.parent && newNode.bodyElement == newNode.parent.bodyLastChild()) {
-        li.classList.add("lastChild");
+        li.classList.add(lastChildClass);
     }
 
     tag.addEventListener("click", function(event) {
@@ -341,25 +334,88 @@ function buildElementGUI(newNode) {
         cancelEvent(event);
     });
 
+    tag.addEventListener("contextmenu",function(event) {
+    	contextAction(event, tag);
+    	cancelEvent(event);
+	});
+}
+
+function contextAction(event, newNode) {
+	event.preventDefault();
+	console.log("Right Clicked");
+    let menu = document.getElementById(contextMenuId);
+    if (menu.classList.contains(block)) {
+        toggleMenuOff();
+    }
+	toggleMenuOn(event, newNode);
+}
+
+function toggleMenuOn(event, newNode) {
+	let menuPosition = getPosition(event);
+	let menu = document.getElementById(contextMenuId);
+	menu.classList.toggle(block);
+	menu.style.top = menuPosition.y;
+	menu.style.left = menuPosition.x;
+
+    let firstLink = menu.firstChild.firstChild;
+    let secondLink = menu.firstChild.lastChild;
+    switch (newNode.bodyElement.nodeType) {
+        case NodeTypes.TEXT_NODE:
+            firstLink.textContent = editTextLabel;
+            if (!secondLink.classList.contains(hidden)) {
+                secondLink.classList.add(hidden);
+            }
+        break;
+
+        case NodeTypes.ELEMENT_NODE:
+            firstLink.textContent = addAttrLabel;
+            if (!secondLink.classList.contains(hidden)) {
+                secondLink.classList.add(hidden);
+            }
+        break;
+
+        case NodeTypes.ATTRIBUTE_NODE:
+            firstLink.textContent = editAttrNameLabel;
+            if (!secondLink.classList.contains(hidden)) {
+                secondLink.classList.remove(hidden);
+            }
+            secondLink.textContent = deleteAttrLabel;
+        break;
+
+
+    }
+}
+
+function toggleMenuOff(newNode) {
+	let menu = document.getElementById(contextMenuId);
+	if (menu.classList.contains(block)) {
+		menu.classList.remove(block);
+	}
+
 }
 
 function toggle(elem) {
-    elem.ul.classList.toggle('hidden');
-    elem.domElement.classList.toggle('collapsibleListOpen');
-    elem.domElement.classList.toggle('collapsibleListClosed');
+    elem.ul.classList.toggle(hidden);
+    elem.domElement.classList.toggle(collapsibleListOpen);
+    elem.domElement.classList.toggle(collapsibleListClosed);
 }
 
 function select(elem) {
     let currentSelection = rootNode.findByBody(getSelectedElement());
     if (currentSelection) {
-        currentSelection.bodyElement.classList.remove('selected');
-        currentSelection.domElement.firstChild.classList.remove('selected');
+        currentSelection.bodyElement.classList.remove(selected);
+        currentSelection.domElement.firstChild.classList.remove(selected);
     }
-    elem.bodyElement.classList.add('selected');
-    elem.domElement.firstChild.classList.add('selected');
+    elem.bodyElement.classList.add(selected);
+    elem.domElement.firstChild.classList.add(selected);
 
-    elem.bodyElement.scrollIntoView();
-    elem.domElement.firstChild.scrollIntoView();
+    if (!isElementInViewport(elem.bodyElement)) {
+    	elem.bodyElement.scrollIntoView();
+    }
+    
+    if (!isElementInViewport(elem.domElement.firstChild)) {
+    	elem.domElement.firstChild.scrollIntoView();
+    }
     //window.alert(rootNode.bodyElement.tagName);
 }
 
@@ -367,6 +423,22 @@ function cancelEvent(event) {
     event.stopPropagation();
 }
 
+/**
+ * Check if element is visible in the window
+ * Source: https://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
+ *
+ */
+function isElementInViewport (el) {
+
+    var rect = el.getBoundingClientRect();
+
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+    );
+}
 
 
 function childrenCount(elem) {
@@ -384,14 +456,14 @@ function childrenCount(elem) {
 }
 
 function getSelectedElement() {
-    var selected = document.getElementsByClassName('selected');
-    if (selected.length == 0) {
+    var selectedElem = document.getElementsByClassName(selected);
+    if (selectedElem.length == 0) {
         return null;
-    } else if (selected.length == 2) {
-        if (selected[0].classList.contains('html')) {
-            return selected[1];
+    } else if (selectedElem.length == 2) {
+        if (selectedElem[0].classList.contains("html")) {
+            return selectedElem[1];
         } else {
-            return selected[0];
+            return selectedElem[0];
         }
     } else {
         console.error("Invalid state more than one element is selected");
