@@ -435,6 +435,10 @@ function toggle(elem) {
 }
 
 function select(elem) {
+    if (!elem) {
+        console.error("Cannot select null element");
+        return;
+    }
     let parent = elem.parent;
     while (parent) {
         if (parent.domElement.classList.contains(collapsibleListClosed)) {
@@ -457,7 +461,6 @@ function select(elem) {
     if (!isElementInViewport(elem.domElement.firstChild)) {
     	elem.domElement.firstChild.scrollIntoView();
     }
-    //window.alert(rootNode.bodyElement.tagName);
 }
 
 function cancelEvent(event) {
