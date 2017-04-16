@@ -173,6 +173,17 @@ class TreeNode {
             }
         }
     }
+
+    setAttributeValue(value) {
+        if (!value) {
+            console.error("Can't set attribute value missing");
+            return;
+        }
+
+        let parentElem = this.parent.bodyElement;
+        parentElem.setAttribute(this.bodyElement.name,value);
+        this.domElement.lastChild.textContent = value;
+    }
 }
 
 
@@ -262,6 +273,9 @@ function buildContextMenu(body) {
     let span2 = document.createElement("span");
     menuItem2.appendChild(span2);
     span2.classList.add(contextMenuItem);
+    span2.addEventListener("click",function(event) {
+        secondLinkListener(event);
+    });
     let menuItem3 = document.createElement("li");
     contextList.appendChild(menuItem3);
     let span3 = document.createElement("span");
@@ -497,21 +511,10 @@ function secondLinkListener(event) {
         case NodeTypes.ATTRIBUTE_NODE:
             let attrVal = prompt("Set new attribute value:", rightClickedElement.bodyElement.value);
             if (attrVal) {
-                setAttributeValue(rightClickedElement,attrVal);
+                rightClickedElement.setAttributeValue(attrVal);
             }
         break;
     }
-}
-
-
-function setAttributeValue(node, name) {
-    if (!node || !name) {
-        console.error("Can't set attribute name, value or target node missing");
-        return;
-    }
-
-    let parentElem = node.parent.bodyElement;
-    parentElem.setAttribute(node.bodyElement.name,name);
 }
 
 function thirdLinkListener(event) {
