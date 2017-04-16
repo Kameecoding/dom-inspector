@@ -15,7 +15,7 @@ const contextMenuId = "cz.vutbr.fit.xkovac36.context-menu";
 /* GUI string constants */
 const editTextLabel = "Edit text";
 const addAttrLabel = "Add attribute (id and class are attributes too)";
-const editAttrNameLabel = "Edit name";
+const editAttrNameLabel = "Edit attribute name";
 const deleteAttrLabel = "Delete attribute";
 const editAttrValueLabel = "Edit attribute value";
 const textNodeLabel = "#text";
@@ -29,6 +29,7 @@ const selected = "cz.vutbr.fit.xkovac36.selected";
 const hidden = "cz.vutbr.fit.xkovac36.hidden";
 const block = "cz.vutbr.fit.xkovac36.block";
 const contextMenu = "cz.vutbr.fit.xkovac36.context-menu";
+const contextMenuItem = "cz.vutbr.fit.xkovac36.context-menu-item";
 const treeView = "cz.vutbr.fit.xkovac36.treeView";
 const collapsibleListOpen = "cz.vutbr.fit.xkovac36.collapsibleListOpen";
 const collapsibleListClosed = "cz.vutbr.fit.xkovac36.collapsibleListClosed";
@@ -157,7 +158,7 @@ function inspector() {
         domPanel.appendChild(domList);
         domList.id = domListId;
         domList.className = treeView;
-        buildContextMenu(document.body);
+        buildContextMenu(domPanel);
         //Build tree of nodes
         rootNode = new TreeNode(null, [], document.documentElement, null, NodeTypes.DOCUMENT_NODE);
         buildElementGUI(rootNode);
@@ -221,11 +222,20 @@ function buildContextMenu(body) {
     let menuItem1 = document.createElement("li");
     contextList.appendChild(menuItem1);
     let span = document.createElement("span");
-    let menu_1 = document.createElement("li");
-    contextList.appendChild(menu_1);
-    let span_1 = document.createElement("span");
-    menu_1.appendChild(span_1);
+    menuItem1.appendChild(span);
+    span.classList.add(contextMenuItem);
+    let menuItem2 = document.createElement("li");
+    contextList.appendChild(menuItem2);
+    let span2 = document.createElement("span");
+    menuItem2.appendChild(span2);
+    span2.classList.add(contextMenuItem);
+    let menuItem3 = document.createElement("li");
+    contextList.appendChild(menuItem3);
+    let span3 = document.createElement("span");
+    menuItem3.appendChild(span3);
+    span3.classList.add(contextMenuItem);
 }
+
 
 /**
  * Recursive depth-first function to build out our own tree of TreeNode objects
@@ -250,7 +260,7 @@ function buildTree2(currentNode, children) {
         //create node in the tree
         let newNode = new TreeNode(currentNode, [], children[i], null, children[i].nodeType);
         if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE 
-                || newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ATTRIBUTE_NODE) {
+                || newNode.type == NodeTypes.TEXT_NODE) {
             buildElementGUI(newNode);
             currentNode.children.push(newNode);
             //Add attributes and values
@@ -281,7 +291,6 @@ function buildElementGUI(newNode) {
     newNode.appendToDom(li);
     newNode.domElement = li;
     
-
     if (newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
         li.appendChild(tag);
@@ -317,7 +326,7 @@ function buildElementGUI(newNode) {
         });
 
         tag.addEventListener("contextmenu",function(event) {
-            contextAction(event, tag);
+            contextAction(event, newNode);
             cancelEvent(event);
         });
     } else if (newNode.type == NodeTypes.ATTRIBUTE_NODE) {
@@ -325,14 +334,25 @@ function buildElementGUI(newNode) {
         let attSpan = document.createElement("span");
         li.appendChild(attSpan);
         let att = newNode.bodyElement;
-        attSpan.textContent = att.nodeName + '=';
+        attSpan.textContent = att.nodeName;
         attSpan.classList.add(attribute);
-
+        attSpan.addEventListener("contextmenu",function(event) {
+            contextAction(event, newNode);
+            cancelEvent(event);
+        });
         if (att.nodeValue && att.nodeValue.trim() != "") {
+            let separator = document.createElement("span");
+            li.appendChild(separator);
+            separator.textContent = '=';
+            separator.classList.add(special);
             let attValSpan = document.createElement("span");
             li.appendChild(attValSpan);
             attValSpan.textContent = att.nodeValue;
             attValSpan.classList.add(attributeValue);
+            attValSpan.addEventListener("contextmenu",function(event) {
+                contextAction(event, newNode);
+                cancelEvent(event);
+            });
         }
     }
 
@@ -355,16 +375,24 @@ function toggleMenuOn(event, newNode) {
 	let menuPosition = getPosition(event);
 	let menu = document.getElementById(contextMenuId);
 	menu.classList.toggle(block);
-	menu.style.top = menuPosition.y;
-	menu.style.left = menuPosition.x;
+	menu.style.top = menuPosition.y + "px";
+    console.log(menuPosition.y);
+    console.log(domPanel.scrollTop);
+    console.log(menuPosition.y + domPanel.scrollTop);
 
-    let firstLink = menu.firstChild.firstChild;
-    let secondLink = menu.firstChild.lastChild;
-    switch (newNode.bodyElement.nodeType) {
+	menu.style.left = menuPosition.x + "px";
+
+    let firstLink = menu.firstChild.firstChild.firstChild;
+    let secondLink = menu.firstChild.childNodes[1].firstChild;
+    let thirdLink = menu.firstChild.lastChild.firstChild;
+    switch (newNode.type) {
         case NodeTypes.TEXT_NODE:
             firstLink.textContent = editTextLabel;
             if (!secondLink.classList.contains(hidden)) {
                 secondLink.classList.add(hidden);
+            }
+            if (!thirdLink.classList.contains(hidden)) {
+                thirdLink.classList.add(hidden);
             }
         break;
 
@@ -373,17 +401,22 @@ function toggleMenuOn(event, newNode) {
             if (!secondLink.classList.contains(hidden)) {
                 secondLink.classList.add(hidden);
             }
+            if (!thirdLink.classList.contains(hidden)) {
+                thirdLink.classList.add(hidden);
+            }
         break;
 
         case NodeTypes.ATTRIBUTE_NODE:
             firstLink.textContent = editAttrNameLabel;
-            if (!secondLink.classList.contains(hidden)) {
+            if (secondLink.classList.contains(hidden)) {
                 secondLink.classList.remove(hidden);
             }
-            secondLink.textContent = deleteAttrLabel;
+            secondLink.textContent = editAttrValueLabel;
+            thirdLink.textContent = deleteAttrLabel;
+            if (thirdLink.classList.contains(hidden)) {
+                thirdLink.classList.remove(hidden);
+            }
         break;
-
-
     }
 }
 
@@ -402,6 +435,13 @@ function toggle(elem) {
 }
 
 function select(elem) {
+    let parent = elem.parent;
+    while (parent) {
+        if (parent.domElement.classList.contains(collapsibleListClosed)) {
+            toggle(parent);
+        }
+        parent = parent.parent;
+    }
     let currentSelection = rootNode.findByBody(getSelectedElement());
     if (currentSelection) {
         currentSelection.bodyElement.classList.remove(selected);
@@ -482,12 +522,10 @@ function getPosition(e) {
 
 	if (!e) var e = window.event;
 
-	if (e.pageX || e.pageY) {
-		posx = e.pageX;
-		posy = e.pageY;
-	} else if (e.clientX || e.clientY) {
-		posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-		posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+
+    if (e.clientX || e.clientY) {
+		posx = e.clientX + domPanel.scrollLeft - domPanel.offsetLeft;
+		posy = e.clientY + domPanel.scrollTop;
 	}
 
 	return {
