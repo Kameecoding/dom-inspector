@@ -14,7 +14,11 @@ const contextMenuId = "cz.vutbr.fit.xkovac36.context-menu";
 
 /* GUI string constants */
 const editTextLabel = "Edit text";
-const addAttrLabel = "Add attribute (id and class are attributes too)";
+const addAttrLabel = "Add attribute";
+const addIdLabel = "Add ID";
+const editIdLabel = "Edit ID";
+const addClassLabel = "Add Class";
+const editClassLabel = "Edit Class";
 const editAttrNameLabel = "Edit attribute name";
 const deleteAttrLabel = "Delete attribute";
 const editAttrValueLabel = "Edit attribute value";
@@ -35,7 +39,11 @@ const collapsibleListOpen = "cz.vutbr.fit.xkovac36.collapsibleListOpen";
 const collapsibleListClosed = "cz.vutbr.fit.xkovac36.collapsibleListClosed";
 const lastChildClass = "cz.vutbr.fit.xkovac36.lastChild";
 
+/*
+    Global Right Clicked Node
+*/
 
+var rightClickedElement;
 
 /**
  * Enumerate nodetypes for easier code readability / avoid magic constants
@@ -143,6 +151,28 @@ class TreeNode {
             return null;
         }
     }
+
+    setAttributeName(name) {
+        let oldName = this.bodyElement.name;
+        let parentNode = this.parent;
+        let parentElem = this.parent.bodyElement;
+
+        parentElem.setAttribute(name, this.bodyElement.value);
+        parentElem.removeAttribute(oldName);
+        this.bodyElement = this.parent.getAttributeByName(name);
+        this.domElement.firstChild.textContent = name;
+    }
+
+    getAttributeByName(name) {
+        let atts = this.bodyElement.attributes;
+        if (atts && atts.length > 0) {
+            for (let i = 0; i < atts.length; i++) {
+                if (atts[i].nodeName == name) {
+                    return atts[i];
+                }
+            }
+        }
+    }
 }
 
 
@@ -221,9 +251,12 @@ function buildContextMenu(body) {
     contextDiv.classList.add(contextMenu);
     let menuItem1 = document.createElement("li");
     contextList.appendChild(menuItem1);
-    let span = document.createElement("span");
-    menuItem1.appendChild(span);
-    span.classList.add(contextMenuItem);
+    let span1 = document.createElement("span");
+    menuItem1.appendChild(span1);
+    span1.classList.add(contextMenuItem);
+    span1.addEventListener("click",function(event) {
+        firstLinkListener(event);
+    });
     let menuItem2 = document.createElement("li");
     contextList.appendChild(menuItem2);
     let span2 = document.createElement("span");
@@ -376,11 +409,8 @@ function toggleMenuOn(event, newNode) {
 	let menu = document.getElementById(contextMenuId);
 	menu.classList.toggle(block);
 	menu.style.top = menuPosition.y + "px";
-    console.log(menuPosition.y);
-    console.log(domPanel.scrollTop);
-    console.log(menuPosition.y + domPanel.scrollTop);
-
 	menu.style.left = menuPosition.x + "px";
+    rightClickedElement = newNode;
 
     let firstLink = menu.firstChild.firstChild.firstChild;
     let secondLink = menu.firstChild.childNodes[1].firstChild;
@@ -397,12 +427,22 @@ function toggleMenuOn(event, newNode) {
         break;
 
         case NodeTypes.ELEMENT_NODE:
-            firstLink.textContent = addAttrLabel;
-            if (!secondLink.classList.contains(hidden)) {
-                secondLink.classList.add(hidden);
+            if (newNode.bodyElement.id) {
+                firstLink.textContent = editIdLabel;
+            } else {
+                firstLink.textContent = addIdLabel;
             }
-            if (!thirdLink.classList.contains(hidden)) {
-                thirdLink.classList.add(hidden);
+            if (newNode.bodyElement.classList.length == 0) {
+                secondLink.textContent = addClassLabel;
+            } else {
+                secondLink.textContent = editClassLabel;
+            }
+            if (secondLink.classList.contains(hidden)) {
+                secondLink.classList.remove(hidden);
+            }
+            thirdLink.textContent = addAttrLabel;
+            if (thirdLink.classList.contains(hidden)) {
+                thirdLink.classList.remove(hidden);
             }
         break;
 
@@ -416,6 +456,74 @@ function toggleMenuOn(event, newNode) {
             if (thirdLink.classList.contains(hidden)) {
                 thirdLink.classList.remove(hidden);
             }
+        break;
+    }
+}
+
+function firstLinkListener(event) {
+    switch(rightClickedElement.type) {
+        case NodeTypes.TEXT_NODE:
+            let text = prompt("Edit Text", rightClickedElement.bodyElement.textContent);
+            if (text) {
+                rightClickedElement.bodyElement.textContent = text;
+            }
+        break;
+
+        case NodeTypes.ELEMENT_NODE:
+            let val = prompt("Set new ID:", rightClickedElement.bodyElement.id); 
+            if (val) {
+                rightClickedElement.bodyElement.id = val;    
+            }
+        break;
+
+        case NodeTypes.ATTRIBUTE_NODE:
+            let name = prompt("Enter new attribute name:", rightClickedElement.bodyElement.name); 
+            if (name) {
+                rightClickedElement.setAttributeName(name);
+            }
+        break;
+    }
+}
+
+function secondLinkListener(event) {
+    switch(rightClickedElement.type) {
+        case NodeTypes.ELEMENT_NODE:
+            let classVal = prompt("Set new class(es):", rightClickedElement.bodyElement.class);
+            if (classVal) {
+                rightClickedElement.bodyElement.class = classVal;
+            }
+        break;
+
+        case NodeTypes.ATTRIBUTE_NODE:
+            let attrVal = prompt("Set new attribute value:", rightClickedElement.bodyElement.value);
+            if (attrVal) {
+                setAttributeValue(rightClickedElement,attrVal);
+            }
+        break;
+    }
+}
+
+
+function setAttributeValue(node, name) {
+    if (!node || !name) {
+        console.error("Can't set attribute name, value or target node missing");
+        return;
+    }
+
+    let parentElem = node.parent.bodyElement;
+    parentElem.setAttribute(node.bodyElement.name,name);
+}
+
+function thirdLinkListener(event) {
+    switch(rightClickedElement.type) {
+        case NodeTypes.ELEMENT_NODE:
+            let attrName = prompt("Set attribute name:", "");
+            let attrVal = prompt("Set attribute value:", "");
+            rightClickedElement.bodyElement.attributes
+        break;
+
+        case NodeTypes.ATTRIBUTE_NODE:
+
         break;
     }
 }
