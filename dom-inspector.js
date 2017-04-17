@@ -25,6 +25,7 @@ const editAttrValueLabel = "Edit attribute value";
 const textNodeLabel = "#text";
 
 /* prefixed CSS constants to avoid duplicates */
+const cssId = "cz.vutbr.fit.xkovac36.css";
 const nodeClass = "cz.vutbr.fit.xkovac36.node";
 const special = "cz.vutbr.fit.xkovac36.special";
 const attribute = "cz.vutbr.fit.xkovac36.attribute";
@@ -196,6 +197,22 @@ class TreeNode {
         }
     }
 
+    addAttribute(attrName, attrVal) {
+        rightClickedElement.bodyElement.setAttribute(attrName, attrVal);
+        let attr = rightClickedElement.getAttributeByName(attrName);
+        let newNode = new TreeNode(this, [], attr, null, NodeTypes.ATTRIBUTE_NODE);
+        if (!this.ul) {
+            this.ul = document.createElement("ul");
+            this.domElement.appendChild(this.ul);
+        }
+        //Class is the first child if there is no id and second if there is
+        let index = 0;
+        if (this.bodyElement.id) {
+            index = 1;
+        }
+        buildElementGUI(newNode,0);
+    }
+
     setAttributeName(name) {
         let oldName = this.bodyElement.name;
         let parentNode = this.parent;
@@ -212,10 +229,21 @@ class TreeNode {
             console.error("Can't set attribute value missing");
             return;
         }
-
         let parentElem = this.parent.bodyElement;
         parentElem.setAttribute(this.bodyElement.name,value);
-        this.domElement.lastChild.textContent = value;
+        if (this.domElement.firstChild === this.domElement.lastChild) {
+            let li = this.domElement;
+            let separator = document.createElement("span");
+            li.appendChild(separator);
+            separator.textContent = '=';
+            separator.classList.add(special);
+            let attValSpan = document.createElement("span");
+            li.appendChild(attValSpan);
+            attValSpan.textContent = value;
+            attValSpan.classList.add(attributeValue);
+        } else {
+            this.domElement.lastChild.textContent = value;
+        }
     }
 
     getAttributeByName(name) {
@@ -265,7 +293,6 @@ function inspector() {
  * @return void
  */
 function applyCss() {
-    var cssId = "cz.vutbr.fit.css";
     if (!document.getElementById(cssId)) {
         var head = document.getElementsByTagName("head")[0];
         var link = document.createElement("link");
@@ -353,7 +380,7 @@ function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
         buildTree2(currentNode, document.body.firstChild.childNodes);
         currentNode.domElement.classList.add(collapsibleListOpen);
-        return
+        return;
     }
     buildTree2(currentNode, currentNode.bodyElement.childNodes);
 
@@ -363,6 +390,7 @@ function buildTree2(currentNode, children) {
 
     for (let i = 0; i < children.length; i++) {
         //create node in the tree
+        if (children[i].id == cssId) continue;
         let newNode = new TreeNode(currentNode, [], children[i], null, children[i].nodeType);
         if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE 
                 || newNode.type == NodeTypes.TEXT_NODE) {
@@ -444,7 +472,7 @@ function buildElementGUI(newNode, position) {
         let att = newNode.bodyElement;
         attSpan.textContent = att.nodeName;
         attSpan.classList.add(attribute);
-        attSpan.addEventListener("contextmenu",function(event) {
+        li.addEventListener("contextmenu",function(event) {
             contextAction(event, newNode);
             cancelEvent(event);
         });
@@ -457,10 +485,6 @@ function buildElementGUI(newNode, position) {
             li.appendChild(attValSpan);
             attValSpan.textContent = att.nodeValue;
             attValSpan.classList.add(attributeValue);
-            attValSpan.addEventListener("contextmenu",function(event) {
-                contextAction(event, newNode);
-                cancelEvent(event);
-            });
         }
     }
 
@@ -596,8 +620,17 @@ function thirdLinkListener(event) {
         case NodeTypes.ELEMENT_NODE: //Add new Attribute
             let attrName = prompt("Set attribute name:", "");
             let attrVal = prompt("Set attribute value:", "");
-            if (attrName) {
-                rightClickedElement.bodyElement.setAttribute(attrName, attrVal);
+
+            if (attrName != null) {
+                if (rightClickedElement.bodyElement.getAttribute(attrName)) {
+                    window.alert("Attribute '" + attrName + "' already exists. You can edit it's" +
+                        " value by right cliking the attribute and editing the value!");
+                    return;
+                }
+                if (attrVal == null) {
+                    attrVal = "";
+                }
+                rightClickedElement.addAttribute(attrName,attrVal);
             }
         break;
 
