@@ -89,13 +89,17 @@ class TreeNode {
     /**
      * Appends Element do the DOM Panel
      */
-    appendToDom(elem) {
+    appendToDom(elem, position) {
         //Special case when building rootNode
         if (this.parent == null) {
             domList.appendChild(elem);
         } else {
             if (this.parent.ul) {
-                this.parent.ul.appendChild(elem);
+                if (position != null) {
+                    this.parent.ul.insertBefore(elem, this.parent.ul.children[position]);
+                } else {
+                    this.parent.ul.appendChild(elem);
+                }
             } else {
                 this.parent.domElement.appendChild(elem);
             }
@@ -183,6 +187,22 @@ class TreeNode {
         let parentElem = this.parent.bodyElement;
         parentElem.setAttribute(this.bodyElement.name,value);
         this.domElement.lastChild.textContent = value;
+    }
+
+    setId(val) {
+        if (this.bodyElement.id) { //id already exists and only needs to be updated
+            this.bodyElement.id = val;
+            //id is alwaysFirstChild
+            this.ul.firstChild.lastChild.textContent = val;
+        } else { //ID needs a GUI representation and new TreeNode to be created
+            this.bodyElement.id = val;
+            let newNode = new TreeNode(this,[],this.getAttributeByName("id"), null, NodeTypes.ATTRIBUTE_NODE);
+            if (!this.ul) {
+                this.ul = document.createElement("ul");
+                this.domElement.appendChild(this.ul);
+            }
+            buildElementGUI(newNode,0);
+        }
     }
 }
 
@@ -333,9 +353,9 @@ function buildTree2(currentNode, children) {
  * @param newNode Node created while building tree
  * @return boolean returns true if child nodes need to be further processed
  */
-function buildElementGUI(newNode) {
+function buildElementGUI(newNode, position) {
     let li = document.createElement("li");
-    newNode.appendToDom(li);
+    newNode.appendToDom(li, position);
     newNode.domElement = li;
     
     if (newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE) {
@@ -475,6 +495,7 @@ function toggleMenuOn(event, newNode) {
 }
 
 function firstLinkListener(event) {
+    toggleMenuOff();
     switch(rightClickedElement.type) {
         case NodeTypes.TEXT_NODE:
             let text = prompt("Edit Text", rightClickedElement.bodyElement.textContent);
@@ -486,7 +507,7 @@ function firstLinkListener(event) {
         case NodeTypes.ELEMENT_NODE:
             let val = prompt("Set new ID:", rightClickedElement.bodyElement.id); 
             if (val) {
-                rightClickedElement.bodyElement.id = val;    
+                rightClickedElement.setId(val);
             }
         break;
 
@@ -500,6 +521,7 @@ function firstLinkListener(event) {
 }
 
 function secondLinkListener(event) {
+    toggleMenuOff();
     switch(rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE:
             let classVal = prompt("Set new class(es):", rightClickedElement.bodyElement.class);
@@ -518,6 +540,7 @@ function secondLinkListener(event) {
 }
 
 function thirdLinkListener(event) {
+    toggleMenuOff();
     switch(rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE:
             let attrName = prompt("Set attribute name:", "");
@@ -531,7 +554,7 @@ function thirdLinkListener(event) {
     }
 }
 
-function toggleMenuOff(newNode) {
+function toggleMenuOff() {
 	let menu = document.getElementById(contextMenuId);
 	if (menu.classList.contains(block)) {
 		menu.classList.remove(block);
