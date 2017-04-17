@@ -156,39 +156,6 @@ class TreeNode {
         }
     }
 
-    setAttributeName(name) {
-        let oldName = this.bodyElement.name;
-        let parentNode = this.parent;
-        let parentElem = this.parent.bodyElement;
-
-        parentElem.setAttribute(name, this.bodyElement.value);
-        parentElem.removeAttribute(oldName);
-        this.bodyElement = this.parent.getAttributeByName(name);
-        this.domElement.firstChild.textContent = name;
-    }
-
-    getAttributeByName(name) {
-        let atts = this.bodyElement.attributes;
-        if (atts && atts.length > 0) {
-            for (let i = 0; i < atts.length; i++) {
-                if (atts[i].nodeName == name) {
-                    return atts[i];
-                }
-            }
-        }
-    }
-
-    setAttributeValue(value) {
-        if (!value) {
-            console.error("Can't set attribute value missing");
-            return;
-        }
-
-        let parentElem = this.parent.bodyElement;
-        parentElem.setAttribute(this.bodyElement.name,value);
-        this.domElement.lastChild.textContent = value;
-    }
-
     setId(val) {
         if (this.bodyElement.id) { //id already exists and only needs to be updated
             this.bodyElement.id = val;
@@ -202,6 +169,63 @@ class TreeNode {
                 this.domElement.appendChild(this.ul);
             }
             buildElementGUI(newNode,0);
+        }
+    }
+
+    setClass(val) {
+        if (!val) {
+            window.alert("Can't set empty class value, " +
+             "right click on class and delete it if you want to remove it.")
+        }
+        //Class is the first child if there is no id and second if there is
+        let index = 0;
+        if (this.bodyElement.id) {
+            index = 1;
+        }
+        if (this.bodyElement.className.trim()) { //class already exists, only update
+            this.bodyElement.className = val;
+            this.ul.childNodes[index].lastChild.textContent = this.bodyElement.className;
+        } else {
+            this.bodyElement.className = val;
+            let newNode = new TreeNode(this,[],this.getAttributeByName("class"), null, NodeTypes.ATTRIBUTE_NODE);
+            if (!this.ul) {
+                this.ul = document.createElement("ul");
+                this.domElement.appendChild(this.ul);
+            }
+            buildElementGUI(newNode,index);
+        }
+    }
+
+    setAttributeName(name) {
+        let oldName = this.bodyElement.name;
+        let parentNode = this.parent;
+        let parentElem = this.parent.bodyElement;
+
+        parentElem.setAttribute(name, this.bodyElement.value);
+        parentElem.removeAttribute(oldName);
+        this.bodyElement = this.parent.getAttributeByName(name);
+        this.domElement.firstChild.textContent = name;
+    }
+
+    setAttributeValue(value) {
+        if (!value) {
+            console.error("Can't set attribute value missing");
+            return;
+        }
+
+        let parentElem = this.parent.bodyElement;
+        parentElem.setAttribute(this.bodyElement.name,value);
+        this.domElement.lastChild.textContent = value;
+    }
+
+    getAttributeByName(name) {
+        let atts = this.bodyElement.attributes;
+        if (atts && atts.length > 0) {
+            for (let i = 0; i < atts.length; i++) {
+                if (atts[i].nodeName == name) {
+                    return atts[i];
+                }
+            }
         }
     }
 }
@@ -224,6 +248,8 @@ function inspector() {
         rootNode = new TreeNode(null, [], document.documentElement, null, NodeTypes.DOCUMENT_NODE);
         buildElementGUI(rootNode);
         buildTree(rootNode);
+        document.addEventListener("click", toggleMenuOff);
+        document.addEventListener("contextmenu",toggleMenuOff);
     }
 }
 
@@ -303,8 +329,8 @@ function buildContextMenu(body) {
     let span3 = document.createElement("span");
     menuItem3.appendChild(span3);
     span3.classList.add(contextMenuItem);
-    span2.addEventListener("click",function(event) {
-        secondLinkListener(event);
+    span3.addEventListener("click",function(event) {
+        thirdLinkListener(event);
         cancelEvent(event);
     });
 }
@@ -381,6 +407,7 @@ function buildElementGUI(newNode, position) {
             newNode.setList(ul);
             li.classList.add(collapsibleListOpen);
             li.addEventListener("click", function(event) {
+                toggleMenuOff();
                 toggle(newNode);
                 cancelEvent(event);
             });
@@ -389,11 +416,13 @@ function buildElementGUI(newNode, position) {
         }
         
         newNode.bodyElement.addEventListener("click", function(event) {
+            toggleMenuOff();
             select(newNode);
             cancelEvent(event);
         });
 
         tag.addEventListener("click", function(event) {
+            toggleMenuOff();
             if (newNode.type != NodeTypes.TEXT_NODE) select(newNode);
             cancelEvent(event);
         });
@@ -472,7 +501,7 @@ function toggleMenuOn(event, newNode) {
             } else {
                 firstLink.textContent = addIdLabel;
             }
-            if (newNode.bodyElement.classList.length == 0) {
+            if (newNode.bodyElement.classList.length == 0 || (newNode.bodyElement.classList.length == 1 && newNode.bodyElement.classList.contains(selected))) {
                 secondLink.textContent = addClassLabel;
             } else {
                 secondLink.textContent = editClassLabel;
@@ -530,9 +559,19 @@ function secondLinkListener(event) {
     toggleMenuOff();
     switch(rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE:
-            let classVal = prompt("Set new class(es):", rightClickedElement.bodyElement.class);
+            let promptVal = rightClickedElement.bodyElement.className;
+            let isSelected = false;
+            if (rightClickedElement.bodyElement.classList.contains(selected)) {
+                rightClickedElement.bodyElement.classList.remove(selected);
+                promptVal = rightClickedElement.bodyElement.className;
+                isSelected = true;
+            }
+            let classVal = prompt("Set new class(es):", promptVal);
             if (classVal) {
-                rightClickedElement.bodyElement.class = classVal;
+                rightClickedElement.setClass(classVal);
+            }
+            if (isSelected) {
+                rightClickedElement.bodyElement.classList.add(selected);
             }
         break;
 
@@ -551,7 +590,9 @@ function thirdLinkListener(event) {
         case NodeTypes.ELEMENT_NODE:
             let attrName = prompt("Set attribute name:", "");
             let attrVal = prompt("Set attribute value:", "");
-            rightClickedElement.bodyElement.attributes
+            if (attrName) {
+                rightClickedElement.bodyElement.setAttribute(attrName, attrVal);
+            }
         break;
 
         case NodeTypes.ATTRIBUTE_NODE:
