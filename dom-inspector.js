@@ -198,6 +198,7 @@ class TreeNode {
     }
 
     addAttribute(attrName, attrVal) {
+        let index = this.bodyElement.attributes.length;
         rightClickedElement.bodyElement.setAttribute(attrName, attrVal);
         let attr = rightClickedElement.getAttributeByName(attrName);
         let newNode = new TreeNode(this, [], attr, null, NodeTypes.ATTRIBUTE_NODE);
@@ -206,7 +207,6 @@ class TreeNode {
             this.domElement.appendChild(this.ul);
         }
         //Class is the first child if there is no id and second if there is
-        let index = this.parent.bodyElement.attributes.length;
         buildElementGUI(newNode,index);
     }
 
