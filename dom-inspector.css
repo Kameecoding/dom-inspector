@@ -40,7 +40,7 @@
 
 /* HighLight Selected Element */
 .cz\.vutbr\.fit\.xkovac36\.selected {
-    background-color: #A0C5E8;
+    background-color: #A0C5E8! important;
 }
 
 /* Hide/Show Elements */
