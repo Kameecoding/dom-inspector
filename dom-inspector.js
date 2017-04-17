@@ -655,18 +655,21 @@ function thirdLinkListener(event) {
     switch(rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE: //Add new Attribute
             let attrName = prompt("Set attribute name:", "");
-            if (attrName != null && rightClickedElement.getAttributeByName(attrName) != null) {
-                window.alert("Attribute '" + attrName + "' already exists. You can edit it's" +
-                       " value by right cliking the attribute and editing the value!");
-                return;
-            }
-            let attrVal = prompt("Set attribute value:", "");
 
             if (attrName != null) {
                 if (attrName == "id" || attrName == "class") {
                     window.alert("For entering id/class please use the proper action items from the menu");
                     return;
                 }
+                if (rightClickedElement.getAttributeByName(attrName) != null) {
+                    window.alert("Attribute '" + attrName + "' already exists. You can edit it's" +
+                                       " value by right cliking the attribute and editing the value!");
+                    return;
+                }
+            }
+            let attrVal = prompt("Set attribute value:", "");
+
+            if (attrName != null) {
                 if (attrVal == null) {
                     attrVal = "";
                 }
