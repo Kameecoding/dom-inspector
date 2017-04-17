@@ -371,6 +371,7 @@ function buildContextMenu(body) {
 
 /**
  * Recursive depth-first function to build out our own tree of TreeNode objects
+ * Skips injected html elements
  * 
  * @param currentNode 
  * @param
@@ -386,6 +387,13 @@ function buildTree(currentNode) {
 
 }
 
+/**
+ * Recursive depth-first function to build out our own tree of TreeNode objects
+ * 
+ * @param {TreeNode} currentNode The current TreeNode that is being processed
+ * @param {[Node]} children The children to be processed for currentNode
+ * @return void
+ */
 function buildTree2(currentNode, children) {
 
     for (let i = 0; i < children.length; i++) {
@@ -416,8 +424,8 @@ function buildTree2(currentNode, children) {
 /**
  * Function for handling HTML elements
  *
- * @param newNode Node created while building tree
- * @return boolean returns true if child nodes need to be further processed
+ * @param {TreeNode} newNode Node created while building tree
+ * @return {boolean} returns true if child nodes need to be further processed
  */
 function buildElementGUI(newNode, position) {
     let li = document.createElement("li");
@@ -493,6 +501,12 @@ function buildElementGUI(newNode, position) {
     }
 }
 
+/*
+ * Action that is provided when contextMenu action is logged 
+ *
+ * @param {Event} event THe fired Event
+ * @param {TreeNode} newNode The newNode created while building the GUI tree
+ */
 function contextAction(event, newNode) {
 	event.preventDefault();
 	console.log("Right Clicked");
@@ -502,6 +516,7 @@ function contextAction(event, newNode) {
     }
 	toggleMenuOn(event, newNode);
 }
+
 
 function toggleMenuOn(event, newNode) {
 	let menuPosition = getPosition(event);
@@ -642,6 +657,9 @@ function thirdLinkListener(event) {
     }
 }
 
+/*
+ * Hides the right click menu panel.
+ */
 function toggleMenuOff() {
 	let menu = document.getElementById(contextMenuId);
 	if (menu.classList.contains(block)) {
@@ -650,12 +668,20 @@ function toggleMenuOff() {
 
 }
 
+/*
+ * Togge the tree representation between open and closed 
+ */
 function toggle(elem) {
     elem.ul.classList.toggle(hidden);
     elem.domElement.classList.toggle(collapsibleListOpen);
     elem.domElement.classList.toggle(collapsibleListClosed);
 }
 
+/*
+ * Highlight the selected element in both the webpage and the DOM tree. 
+ *
+ * @param {ELEMENT} The element to be highlighted
+ */
 function select(elem) {
     if (!elem) {
         console.error("Cannot select null element");
@@ -670,10 +696,19 @@ function select(elem) {
     }
     let currentSelection = rootNode.findByBody(getSelectedElement());
     if (currentSelection) {
-        currentSelection.bodyElement.classList.remove(selected);
+        if (elem.bodyElement == document.body) {
+            bodyDiv.classList.remove(selected);
+        } else {
+            currentSelection.bodyElement.classList.remove(selected);
+        }
         currentSelection.domElement.firstChild.classList.remove(selected);
     }
-    elem.bodyElement.classList.add(selected);
+
+    if (elem.bodyElement == document.body) {
+        document.body.firstChild.classList.add(selected);
+    } else {
+        elem.bodyElement.classList.add(selected);
+    }
     elem.domElement.firstChild.classList.add(selected);
 
     if (!isElementInViewport(elem.bodyElement)) {
@@ -685,6 +720,11 @@ function select(elem) {
     }
 }
 
+/*
+ * Stop the event from being propagated, so other listeners aren't triggered
+ * 
+ * @param {Event} the event to stop. 
+ */
 function cancelEvent(event) {
     event.stopPropagation();
 }
@@ -706,7 +746,12 @@ function isElementInViewport (el) {
     );
 }
 
-
+/*
+ * Counts the number of child elements that are either for an element
+ *
+ * @param {Element} elem The element for which the children should be counted
+ * @return {int} The count of children that are valid
+ */
 function childrenCount(elem) {
     return nodeChildCount(elem) + (elem.attributes ? elem.attributes.length : 0);
 }
