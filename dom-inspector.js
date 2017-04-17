@@ -124,13 +124,12 @@ class TreeNode {
         if (children.length > 0) {
             for (let i = 0; i < children.length; i++) {
                 type = this.bodyElement.nodeType;
-                if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE 
-                    || type == NodeTypes.TEXT_NODE) {
-                    
+                if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+
                     lastChild = children[i];
                 }
-            } 
-        } else { 
+            }
+        } else {
             //Because Attributes are rendered before HTML tags an attribute can only be
             //last child if there is no HTML tag
             if (this.bodyElement.attributes && this.bodyElement.attributes.length > 0) {
@@ -164,19 +163,19 @@ class TreeNode {
             this.ul.firstChild.lastChild.textContent = val;
         } else { //ID needs a GUI representation and new TreeNode to be created
             this.bodyElement.id = val;
-            let newNode = new TreeNode(this,[],this.getAttributeByName("id"), null, NodeTypes.ATTRIBUTE_NODE);
+            let newNode = new TreeNode(this, [], this.getAttributeByName("id"), null, NodeTypes.ATTRIBUTE_NODE);
             if (!this.ul) {
                 this.ul = document.createElement("ul");
                 this.domElement.appendChild(this.ul);
             }
-            buildElementGUI(newNode,0);
+            buildElementGUI(newNode, 0);
         }
     }
 
     setClass(val) {
         if (!val) {
             window.alert("Can't set empty class value, " +
-             "right click on class and delete it if you want to remove it.")
+                "right click on class and delete it if you want to remove it.")
         }
         //Class is the first child if there is no id and second if there is
         let index = 0;
@@ -188,12 +187,12 @@ class TreeNode {
             this.ul.childNodes[index].lastChild.textContent = this.bodyElement.className;
         } else {
             this.bodyElement.className = val;
-            let newNode = new TreeNode(this,[],this.getAttributeByName("class"), null, NodeTypes.ATTRIBUTE_NODE);
+            let newNode = new TreeNode(this, [], this.getAttributeByName("class"), null, NodeTypes.ATTRIBUTE_NODE);
             if (!this.ul) {
                 this.ul = document.createElement("ul");
                 this.domElement.appendChild(this.ul);
             }
-            buildElementGUI(newNode,index);
+            buildElementGUI(newNode, index);
         }
     }
 
@@ -207,9 +206,9 @@ class TreeNode {
             this.domElement.appendChild(this.ul);
         }
         //Class is the first child if there is no id and second if there is
-        buildElementGUI(newNode,index);
+        buildElementGUI(newNode, index);
         if (nodeChildCount(this.bodyElement) == 0) {
-            if (index > 0 ) this.children[index-1].domElement.classList.remove(lastChildClass);
+            if (index > 0) this.children[index - 1].domElement.classList.remove(lastChildClass);
         }
     }
 
@@ -230,7 +229,7 @@ class TreeNode {
             return;
         }
         let parentElem = this.parent.bodyElement;
-        parentElem.setAttribute(this.bodyElement.name,value);
+        parentElem.setAttribute(this.bodyElement.name, value);
         if (this.domElement.firstChild === this.domElement.lastChild) {
             let li = this.domElement;
             let separator = document.createElement("span");
@@ -262,7 +261,7 @@ class TreeNode {
         this.parent.bodyElement.removeAttribute(this.bodyElement.name);
         this.parent.ul.removeChild(this.domElement);
         this.parent.children.splice(this.parent.children.indexOf(this), 1);
-        this.parent.children[this.parent.children.length-1].domElement.classList.toggle(lastChildClass,true);
+        this.parent.children[this.parent.children.length - 1].domElement.classList.toggle(lastChildClass, true);
     }
 }
 
@@ -285,7 +284,7 @@ function inspector() {
         buildElementGUI(rootNode);
         buildTree(rootNode);
         document.addEventListener("click", toggleMenuOff);
-        document.addEventListener("contextmenu",toggleMenuOff);
+        document.addEventListener("contextmenu", toggleMenuOff);
     }
 }
 
@@ -330,15 +329,15 @@ function repackSite() {
 }
 
 function buildContextMenu(body) {
-	if (!body) {
-		console.error("No Body element received.");
-		return;
-	}
-	
-	let contextDiv = document.createElement("div");
-	contextDiv.id = contextMenuId;
-	body.appendChild(contextDiv);
-	let contextList = document.createElement("ul");
+    if (!body) {
+        console.error("No Body element received.");
+        return;
+    }
+
+    let contextDiv = document.createElement("div");
+    contextDiv.id = contextMenuId;
+    body.appendChild(contextDiv);
+    let contextList = document.createElement("ul");
     contextDiv.appendChild(contextList);
     contextDiv.classList.add(contextMenu);
     let menuItem1 = document.createElement("li");
@@ -346,7 +345,7 @@ function buildContextMenu(body) {
     let span1 = document.createElement("span");
     menuItem1.appendChild(span1);
     span1.classList.add(contextMenuItem);
-    span1.addEventListener("click",function(event) {
+    span1.addEventListener("click", function(event) {
         firstLinkListener(event);
         cancelEvent(event);
     });
@@ -355,7 +354,7 @@ function buildContextMenu(body) {
     let span2 = document.createElement("span");
     menuItem2.appendChild(span2);
     span2.classList.add(contextMenuItem);
-    span2.addEventListener("click",function(event) {
+    span2.addEventListener("click", function(event) {
         secondLinkListener(event);
         cancelEvent(event);
     });
@@ -364,7 +363,7 @@ function buildContextMenu(body) {
     let span3 = document.createElement("span");
     menuItem3.appendChild(span3);
     span3.classList.add(contextMenuItem);
-    span3.addEventListener("click",function(event) {
+    span3.addEventListener("click", function(event) {
         thirdLinkListener(event);
         cancelEvent(event);
     });
@@ -402,12 +401,8 @@ function buildTree2(currentNode, children) {
         //create node in the tree
         if (children[i].id == cssId) continue;
         let newNode = new TreeNode(currentNode, [], children[i], null, children[i].nodeType);
-        if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE 
-                || newNode.type == NodeTypes.TEXT_NODE) {
+        if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE || newNode.type == NodeTypes.TEXT_NODE) {
             buildElementGUI(newNode);
-            if (newNode.bodyElement == document.body) {
-                newNode.bodyElement = document.getElementById(bodyDivId);
-            }
             //Add attributes and values
             let atts = newNode.bodyElement.attributes;
             if (atts && atts.length > 0) {
@@ -436,7 +431,7 @@ function buildElementGUI(newNode, position) {
     newNode.appendToDom(li, position);
     newNode.domElement = li;
     if (newNode.parent) newNode.parent.children.push(newNode);
-    
+
     if (newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
         li.appendChild(tag);
@@ -447,7 +442,7 @@ function buildElementGUI(newNode, position) {
             tagName = newNode.bodyElement.tagName.toLowerCase();
             tag.textContent = tagName;
         }
-        
+
         if (childrenCount(newNode.bodyElement) > 0) {
             var ul = document.createElement("ul");
             li.appendChild(ul);
@@ -461,7 +456,8 @@ function buildElementGUI(newNode, position) {
         } else {
             newNode.setList(null);
         }
-        
+
+
         newNode.bodyElement.addEventListener("click", function(event) {
             toggleMenuOff();
             select(newNode);
@@ -473,11 +469,12 @@ function buildElementGUI(newNode, position) {
             if (newNode.type != NodeTypes.TEXT_NODE) select(newNode);
             cancelEvent(event);
         });
-
-        tag.addEventListener("contextmenu",function(event) {
-            contextAction(event, newNode);
-            cancelEvent(event);
-        });
+        if (newNode.type != NodeTypes.DOCUMENT_NODE) {
+            tag.addEventListener("contextmenu", function(event) {
+                contextAction(event, newNode);
+                cancelEvent(event);
+            });
+        }
     } else if (newNode.type == NodeTypes.ATTRIBUTE_NODE) {
         li.classList.add(attribute);
         let attSpan = document.createElement("span");
@@ -485,10 +482,10 @@ function buildElementGUI(newNode, position) {
         let att = newNode.bodyElement;
         attSpan.textContent = att.nodeName;
         attSpan.classList.add(attribute);
-        li.addEventListener("click",function(event) {
+        li.addEventListener("click", function(event) {
             cancelEvent(event);
         });
-        li.addEventListener("contextmenu",function(event) {
+        li.addEventListener("contextmenu", function(event) {
             contextAction(event, newNode);
             cancelEvent(event);
         });
@@ -516,13 +513,13 @@ function buildElementGUI(newNode, position) {
  * @param {TreeNode} newNode The newNode created while building the GUI tree
  */
 function contextAction(event, newNode) {
-	event.preventDefault();
-	console.log("Right Clicked");
+    event.preventDefault();
+    console.log("Right Clicked");
     let menu = document.getElementById(contextMenuId);
     if (menu.classList.contains(block)) {
         toggleMenuOff();
     }
-	toggleMenuOn(event, newNode);
+    toggleMenuOn(event, newNode);
 }
 
 /*
@@ -531,11 +528,11 @@ function contextAction(event, newNode) {
  * @return {void} 
  */
 function toggleMenuOn(event, newNode) {
-	let menuPosition = getPosition(event);
-	let menu = document.getElementById(contextMenuId);
-	menu.classList.toggle(block);
-	menu.style.top = menuPosition.y + "px";
-	menu.style.left = menuPosition.x + "px";
+    let menuPosition = getPosition(event);
+    let menu = document.getElementById(contextMenuId);
+    menu.classList.toggle(block);
+    menu.style.top = menuPosition.y + "px";
+    menu.style.left = menuPosition.x + "px";
     rightClickedElement = newNode;
 
     let firstLink = menu.firstChild.firstChild.firstChild;
@@ -550,7 +547,7 @@ function toggleMenuOn(event, newNode) {
             if (!thirdLink.classList.contains(hidden)) {
                 thirdLink.classList.add(hidden);
             }
-        break;
+            break;
 
         case NodeTypes.ELEMENT_NODE:
             if (newNode.bodyElement.id) {
@@ -570,7 +567,7 @@ function toggleMenuOn(event, newNode) {
             if (thirdLink.classList.contains(hidden)) {
                 thirdLink.classList.remove(hidden);
             }
-        break;
+            break;
 
         case NodeTypes.ATTRIBUTE_NODE:
             firstLink.textContent = editAttrNameLabel;
@@ -582,7 +579,7 @@ function toggleMenuOn(event, newNode) {
             if (thirdLink.classList.contains(hidden)) {
                 thirdLink.classList.remove(hidden);
             }
-        break;
+            break;
     }
 }
 
@@ -591,27 +588,27 @@ function toggleMenuOn(event, newNode) {
  */
 function firstLinkListener(event) {
     toggleMenuOff();
-    switch(rightClickedElement.type) {
+    switch (rightClickedElement.type) {
         case NodeTypes.TEXT_NODE:
             let text = prompt("Edit Text", rightClickedElement.bodyElement.textContent);
             if (text) {
                 rightClickedElement.bodyElement.textContent = text;
             }
-        break;
+            break;
 
         case NodeTypes.ELEMENT_NODE:
-            let val = prompt("Set new ID:", rightClickedElement.bodyElement.id); 
+            let val = prompt("Set new ID:", rightClickedElement.bodyElement.id);
             if (val) {
                 rightClickedElement.setId(val);
             }
-        break;
+            break;
 
         case NodeTypes.ATTRIBUTE_NODE:
-            let name = prompt("Enter new attribute name:", rightClickedElement.bodyElement.name); 
+            let name = prompt("Enter new attribute name:", rightClickedElement.bodyElement.name);
             if (name) {
                 rightClickedElement.setAttributeName(name);
             }
-        break;
+            break;
     }
 }
 
@@ -620,7 +617,7 @@ function firstLinkListener(event) {
  */
 function secondLinkListener(event) {
     toggleMenuOff();
-    switch(rightClickedElement.type) {
+    switch (rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE:
             let promptVal = rightClickedElement.bodyElement.className;
             let isSelected = false;
@@ -636,14 +633,14 @@ function secondLinkListener(event) {
             if (isSelected) {
                 rightClickedElement.bodyElement.classList.add(selected);
             }
-        break;
+            break;
 
         case NodeTypes.ATTRIBUTE_NODE:
             let attrVal = prompt("Set new attribute value:", rightClickedElement.bodyElement.value);
             if (attrVal) {
                 rightClickedElement.setAttributeValue(attrVal);
             }
-        break;
+            break;
     }
 }
 
@@ -652,7 +649,7 @@ function secondLinkListener(event) {
  */
 function thirdLinkListener(event) {
     toggleMenuOff();
-    switch(rightClickedElement.type) {
+    switch (rightClickedElement.type) {
         case NodeTypes.ELEMENT_NODE: //Add new Attribute
             let attrName = prompt("Set attribute name:", "");
 
@@ -663,7 +660,7 @@ function thirdLinkListener(event) {
                 }
                 if (rightClickedElement.getAttributeByName(attrName) != null) {
                     window.alert("Attribute '" + attrName + "' already exists. You can edit it's" +
-                                       " value by right cliking the attribute and editing the value!");
+                        " value by right cliking the attribute and editing the value!");
                     return;
                 }
             }
@@ -673,15 +670,15 @@ function thirdLinkListener(event) {
                 if (attrVal == null) {
                     attrVal = "";
                 }
-                rightClickedElement.addAttribute(attrName,attrVal);
+                rightClickedElement.addAttribute(attrName, attrVal);
             }
-        break;
+            break;
 
         case NodeTypes.ATTRIBUTE_NODE: //Delete selected attribute
             if (confirm("This will delete the attrubte. Are you sure?")) {
                 rightClickedElement.delete();
             }
-        break;
+            break;
     }
 }
 
@@ -689,10 +686,10 @@ function thirdLinkListener(event) {
  * Hides the right click menu panel.
  */
 function toggleMenuOff() {
-	let menu = document.getElementById(contextMenuId);
-	if (menu.classList.contains(block)) {
-		menu.classList.remove(block);
-	}
+    let menu = document.getElementById(contextMenuId);
+    if (menu.classList.contains(block)) {
+        menu.classList.remove(block);
+    }
 
 }
 
@@ -722,21 +719,31 @@ function select(elem) {
         }
         parent = parent.parent;
     }
-    let currentSelection = rootNode.findByBody(getSelectedElement());
-    if (currentSelection) {
-        currentSelection.bodyElement.classList.remove(selected);
-        currentSelection.domElement.firstChild.classList.remove(selected);
+    let selectedElem = getSelectedElement();
+    if (selectedElem != null) {
+        selectedElem.classList.remove(selected);
+        let selectedTreeNode = null;
+        if (selectedElem == document.getElementById(bodyDivId)) {
+            selectedTreeNode = rootNode.findByBody(document.body);
+        } else {
+            selectedTreeNode = rootNode.findByBody(selectedElem);
+        }
+        selectedTreeNode.domElement.firstChild.classList.remove(selected);
     }
-
-    elem.bodyElement.classList.add(selected);
+    
+    if (elem.bodyElement == document.body) {
+        document.getElementById(bodyDivId).classList.add(selected);
+    } else {
+        elem.bodyElement.classList.add(selected);
+    }
     elem.domElement.firstChild.classList.add(selected);
 
     if (!isElementInViewport(elem.bodyElement)) {
-    	elem.bodyElement.scrollIntoView();
+        elem.bodyElement.scrollIntoView();
     }
-    
+
     if (!isElementInViewport(elem.domElement.firstChild)) {
-    	elem.domElement.firstChild.scrollIntoView();
+        elem.domElement.firstChild.scrollIntoView();
     }
 }
 
@@ -754,7 +761,7 @@ function cancelEvent(event) {
  * Source: https://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
  *
  */
-function isElementInViewport (el) {
+function isElementInViewport(el) {
 
     var rect = el.getBoundingClientRect();
 
@@ -783,8 +790,7 @@ function nodeChildCount(elem) {
     if (!elem) return result;
     for (var i = 0; i < elem.childNodes.length; i++) {
         type = elem.childNodes[i].nodeType;
-        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE 
-                || type == NodeTypes.TEXT_NODE) {
+        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
             result++;
         }
     }
@@ -807,21 +813,21 @@ function getSelectedElement() {
 }
 
 function getPosition(e) {
-	var posx = 0;
-	var posy = 0;
+    var posx = 0;
+    var posy = 0;
 
-	if (!e) var e = window.event;
+    if (!e) var e = window.event;
 
 
     if (e.clientX || e.clientY) {
-		posx = e.clientX + domPanel.scrollLeft - domPanel.offsetLeft;
-		posy = e.clientY + domPanel.scrollTop;
-	}
+        posx = e.clientX + domPanel.scrollLeft - domPanel.offsetLeft;
+        posy = e.clientY + domPanel.scrollTop;
+    }
 
-	return {
-		x: posx,
-		y: posy
-	}
+    return {
+        x: posx,
+        y: posy
+    }
 }
 
 //inspector();
