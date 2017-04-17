@@ -403,6 +403,9 @@ function buildTree2(currentNode, children) {
         if (newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE 
                 || newNode.type == NodeTypes.TEXT_NODE) {
             buildElementGUI(newNode);
+            if (newNode.bodyElement == document.body) {
+                newNode.bodyElement = document.getElementById(bodyDivId);
+            }
             currentNode.children.push(newNode);
             //Add attributes and values
             let atts = newNode.bodyElement.attributes;
@@ -480,6 +483,9 @@ function buildElementGUI(newNode, position) {
         let att = newNode.bodyElement;
         attSpan.textContent = att.nodeName;
         attSpan.classList.add(attribute);
+        li.addEventListener("click",function(event) {
+            cancelEvent(event);
+        });
         li.addEventListener("contextmenu",function(event) {
             contextAction(event, newNode);
             cancelEvent(event);
@@ -517,7 +523,11 @@ function contextAction(event, newNode) {
 	toggleMenuOn(event, newNode);
 }
 
-
+/*
+ * Sets correct labels in the Context (right-click) menu based what type of element was clicked
+ *
+ * @return {void} 
+ */
 function toggleMenuOn(event, newNode) {
 	let menuPosition = getPosition(event);
 	let menu = document.getElementById(contextMenuId);
@@ -574,6 +584,9 @@ function toggleMenuOn(event, newNode) {
     }
 }
 
+/*
+ * Implements the first menu item in the context menu. Executes actions based on the type of element was right clicked
+ */
 function firstLinkListener(event) {
     toggleMenuOff();
     switch(rightClickedElement.type) {
@@ -600,6 +613,9 @@ function firstLinkListener(event) {
     }
 }
 
+/*
+ * Implements the second menu item in the context menu. Executes actions based on the type of element was right clicked
+ */
 function secondLinkListener(event) {
     toggleMenuOff();
     switch(rightClickedElement.type) {
@@ -629,6 +645,9 @@ function secondLinkListener(event) {
     }
 }
 
+/*
+ * Implements the third menu item in the context menu. Executes actions based on the type of element was right clicked
+ */
 function thirdLinkListener(event) {
     toggleMenuOff();
     switch(rightClickedElement.type) {
@@ -680,7 +699,7 @@ function toggle(elem) {
 /*
  * Highlight the selected element in both the webpage and the DOM tree. 
  *
- * @param {ELEMENT} The element to be highlighted
+ * @param {Element} The element to be highlighted
  */
 function select(elem) {
     if (!elem) {
@@ -696,19 +715,11 @@ function select(elem) {
     }
     let currentSelection = rootNode.findByBody(getSelectedElement());
     if (currentSelection) {
-        if (elem.bodyElement == document.body) {
-            bodyDiv.classList.remove(selected);
-        } else {
-            currentSelection.bodyElement.classList.remove(selected);
-        }
+        currentSelection.bodyElement.classList.remove(selected);
         currentSelection.domElement.firstChild.classList.remove(selected);
     }
 
-    if (elem.bodyElement == document.body) {
-        document.body.firstChild.classList.add(selected);
-    } else {
-        elem.bodyElement.classList.add(selected);
-    }
+    elem.bodyElement.classList.add(selected);
     elem.domElement.firstChild.classList.add(selected);
 
     if (!isElementInViewport(elem.bodyElement)) {
