@@ -25,15 +25,17 @@
     color: #88129F;
 }
 
+/* Color for equal sign between attribute and it's value */
 .cz\.vutbr\.fit\.xkovac36\.special {
     color: #BCBCBD;
 }
 
-/* Color for HTML element attributes*/
+/* Color for HTML element attributes */
 .cz\.vutbr\.fit\.xkovac36\.attribute {
     color: #994500;
 }
 
+/* Color for attribute value */
 .cz\.vutbr\.fit\.xkovac36\.attributeValue {
     color: #1A1AA6;
 }
@@ -55,6 +57,7 @@
 /*
  Based on: http://code.stephenmorley.org/javascript/collapsible-lists/
 */
+/* The whole tree */
 .cz\.vutbr\.fit\.xkovac36\.treeView {
   -moz-user-select:none;
   position:relative;
@@ -78,6 +81,7 @@ ul {
   background-image:none;
 }
 
+/* Node holders in the treeview */
 .cz\.vutbr\.fit\.xkovac36\.treeView li {
   margin:0;
   padding:0;
@@ -87,11 +91,13 @@ ul {
   cursor:auto;
 }
 
+/* Expanded Node*/
 .cz\.vutbr\.fit\.xkovac36\.treeView li .cz\.vutbr\.fit\.xkovac36\.collapsibleListOpen {
   list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-open.png');
   cursor:pointer;
 }
 
+/* Collapsed Node */
 .cz\.vutbr\.fit\.xkovac36\.treeView li .cz\.vutbr\.fit\.xkovac36\.collapsibleListClosed {
   list-style-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/button-closed.png');
   cursor:pointer;
@@ -102,10 +108,12 @@ ul {
   padding-left:1.5em;
 }
 
+/* Last node at give level */
 .cz\.vutbr\.fit\.xkovac36\.treeView li.cz\.vutbr\.fit\.xkovac36\.lastChild {
   background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last.png');
 }
 
+/* Last node at give level */
 .cz\.vutbr\.fit\.xkovac36\.treeView li.cz\.vutbr\.fit\.xkovac36\.collapsibleListOpen.cz\.vutbr\.fit\.xkovac36\.lastChild {
   background-image:url('http://code.stephenmorley.org/javascript/collapsible-lists/list-item-last-open.png');
 }
@@ -113,6 +121,7 @@ ul {
 /*
  	Based on: https://www.sitepoint.com/building-custom-right-click-context-menu-javascript/
  */
+/* The context menu panel */
 .cz\.vutbr\.fit\.xkovac36\.context-menu {
   display: none;
   position: absolute;
@@ -123,6 +132,7 @@ ul {
   box-shadow: 1px 1px 2px #cfcfcf;
 }
 
+/* Context menu action holders */
 .cz\.vutbr\.fit\.xkovac36\.context-menu li {
   display: block;
   list-style: none;
@@ -131,6 +141,7 @@ ul {
   margin-bottom: 4px;
 }
 
+/* The context menu actions */
 .cz\.vutbr\.fit\.xkovac36\.context-menu-item {
   display: block;
   padding: 4px 12px;
