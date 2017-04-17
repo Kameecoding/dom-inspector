@@ -228,6 +228,12 @@ class TreeNode {
             }
         }
     }
+
+    delete() {
+        this.parent.bodyElement.removeAttribute(this.bodyElement.name);
+        this.parent.ul.removeChild(this.domElement);
+        this.parent.children.splice(this.parent.children.indexOf(this), 1);
+    }
 }
 
 
@@ -587,7 +593,7 @@ function secondLinkListener(event) {
 function thirdLinkListener(event) {
     toggleMenuOff();
     switch(rightClickedElement.type) {
-        case NodeTypes.ELEMENT_NODE:
+        case NodeTypes.ELEMENT_NODE: //Add new Attribute
             let attrName = prompt("Set attribute name:", "");
             let attrVal = prompt("Set attribute value:", "");
             if (attrName) {
@@ -595,8 +601,10 @@ function thirdLinkListener(event) {
             }
         break;
 
-        case NodeTypes.ATTRIBUTE_NODE:
-
+        case NodeTypes.ATTRIBUTE_NODE: //Delete selected attribute
+            if (confirm("This will delete the attrubte. Are you sure?")) {
+                rightClickedElement.delete();
+            }
         break;
     }
 }
