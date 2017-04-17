@@ -287,6 +287,7 @@ function buildContextMenu(body) {
     span1.classList.add(contextMenuItem);
     span1.addEventListener("click",function(event) {
         firstLinkListener(event);
+        cancelEvent(event);
     });
     let menuItem2 = document.createElement("li");
     contextList.appendChild(menuItem2);
@@ -295,12 +296,17 @@ function buildContextMenu(body) {
     span2.classList.add(contextMenuItem);
     span2.addEventListener("click",function(event) {
         secondLinkListener(event);
+        cancelEvent(event);
     });
     let menuItem3 = document.createElement("li");
     contextList.appendChild(menuItem3);
     let span3 = document.createElement("span");
     menuItem3.appendChild(span3);
     span3.classList.add(contextMenuItem);
+    span2.addEventListener("click",function(event) {
+        secondLinkListener(event);
+        cancelEvent(event);
+    });
 }
 
 
@@ -388,7 +394,7 @@ function buildElementGUI(newNode, position) {
         });
 
         tag.addEventListener("click", function(event) {
-            select(newNode);
+            if (newNode.type != NodeTypes.TEXT_NODE) select(newNode);
             cancelEvent(event);
         });
 
