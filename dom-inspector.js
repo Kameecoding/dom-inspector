@@ -1,4 +1,4 @@
-/**
+/***
  * author: Andrej Kovac xkovac36@stud.fit.vutbr.cz // andrej.kovac.ggc@gmail.com
  * date: 2017-04-08
  * file: dom-inspector.js
@@ -6,13 +6,13 @@
 /***************************************************************************************************
  ************************************** GLOBAL CONSTANTS *******************************************
  **************************************************************************************************/
-/* IDs */
+/** IDs */
 const domPanelId = "cz.vutbr.fit.xkovac36.dom-panel";
 const bodyDivId = "cz.vutbr.fit.xkovac36.main-panel";
 const domListId = "cz.vutbr.fit.xkovac36.dom-list";
 const contextMenuId = "cz.vutbr.fit.xkovac36.context-menu";
 
-/* GUI string constants */
+/** GUI string constants */
 const editTextLabel = "Edit text";
 const addAttrLabel = "Add attribute";
 const addIdLabel = "Add ID";
@@ -24,7 +24,7 @@ const deleteAttrLabel = "Delete attribute";
 const editAttrValueLabel = "Edit attribute value";
 const textNodeLabel = "#text";
 
-/* prefixed CSS constants to avoid duplicates */
+/** prefixed CSS constants to avoid duplicates */
 const cssId = "cz.vutbr.fit.xkovac36.css";
 const nodeClass = "cz.vutbr.fit.xkovac36.node";
 const special = "cz.vutbr.fit.xkovac36.special";
@@ -40,10 +40,9 @@ const collapsibleListOpen = "cz.vutbr.fit.xkovac36.collapsibleListOpen";
 const collapsibleListClosed = "cz.vutbr.fit.xkovac36.collapsibleListClosed";
 const lastChildClass = "cz.vutbr.fit.xkovac36.lastChild";
 
-/*
+/**
     Global Right Clicked Node
 */
-
 var rightClickedElement;
 
 /**
@@ -75,6 +74,14 @@ var NodeTypes = {
  */
 class TreeNode {
 
+    /**
+     * @constructor
+     * @param {TreeNode} parent - The parent of this node
+     * @param {TreeNode[]} children - The childNodes of this Node
+     * @param {Element} bodyElement - The element from the html being inspected
+     * @param {Element} domElement - The element for visual representation of bodyElement
+     * @param {NodeTypes} type - The type of the bodyElement 
+     */
     constructor(parent, children, bodyElement, domElement, type) {
         this.parent = parent;
         this.children = children;
@@ -83,12 +90,19 @@ class TreeNode {
         this.type = type;
     }
 
+    /**
+     * @param {Element} elem - The list element to set
+     */
     setList(elem) {
         this.ul = elem;
     }
 
     /**
-     * Appends Element do the DOM Panel
+     * Appends Element do the DOM Panel by inserting it as a child of the parents domElement
+     * or list
+     * 
+     * @param {Element} elem - The element to append
+     * @param {int} position - The position where the element should be inserted
      */
     appendToDom(elem, position) {
         //Special case when building rootNode
@@ -109,8 +123,8 @@ class TreeNode {
     }
 
     /**
-     * Returns the last child of bodyElement that is of the desired type
-     * @return lastChild
+     * Returns the last child of bodyElement that is of the desired type or the last attribute
+     * @return {Element|Attribute}
      */
     bodyLastChild() {
         let lastChild = null;
@@ -140,6 +154,12 @@ class TreeNode {
 
     }
 
+    /**
+     * Recursive function to find TreeNode by the bodyElement
+     *
+     * @param {Element} elem - Ehe element to find by
+     * @return {TreeNode} The TreeNode containing elem or null
+     */
     findByBody(elem) {
         if (!elem) return null;
 
@@ -156,6 +176,11 @@ class TreeNode {
         }
     }
 
+    /**
+     * Edits/adds id and updates/creates the visual representation
+     *
+     * @param {string} val - the id to set
+     */
     setId(val) {
         if (this.bodyElement.id) { //id already exists and only needs to be updated
             this.bodyElement.id = val;
@@ -172,6 +197,12 @@ class TreeNode {
         }
     }
 
+    /**
+     * Edits/adds class and updates/creates visual representation
+     * Ignores the selected class, doesn't show it to user, doesn't it let be removed
+     *
+     * @param {string} val - the className to set
+     */
     setClass(val) {
         if (!val) {
             window.alert("Can't set empty class value, " +
@@ -188,6 +219,7 @@ class TreeNode {
         } else {
             this.bodyElement.className = val;
             let newNode = new TreeNode(this, [], this.getAttributeByName("class"), null, NodeTypes.ATTRIBUTE_NODE);
+            //if doesn't have children yet, need to create a list where to put the child
             if (!this.ul) {
                 this.ul = document.createElement("ul");
                 this.domElement.appendChild(this.ul);
@@ -196,6 +228,13 @@ class TreeNode {
         }
     }
 
+
+    /**
+     * Create a new attribute and add a visual representation for it
+     *
+     * @param {string} name - Attribute name
+     * @param {string} value - Attribute value
+     */
     addAttribute(attrName, attrVal) {
         let index = this.bodyElement.attributes.length;
         rightClickedElement.bodyElement.setAttribute(attrName, attrVal);
@@ -207,11 +246,17 @@ class TreeNode {
         }
         //Class is the first child if there is no id and second if there is
         buildElementGUI(newNode, index);
+        //Check if the added attribute will be the new LastChild
         if (nodeChildCount(this.bodyElement) == 0) {
+            //if it's new lastchild, remove previous lastchild's visual representation
             if (index > 0) this.children[index - 1].domElement.classList.remove(lastChildClass);
         }
     }
 
+    /**
+     * Set the name of the attribute and refresh the visual representation 
+     * @param {string} name - Attribute name
+     */
     setAttributeName(name) {
         let oldName = this.bodyElement.name;
         let parentNode = this.parent;
@@ -223,6 +268,11 @@ class TreeNode {
         this.domElement.firstChild.textContent = name;
     }
 
+    /**
+     * Set the value of the attribute and refresh the visual representation 
+     *
+     * @param {string} value - Attribute value
+     */
     setAttributeValue(value) {
         if (!value) {
             console.error("Can't set attribute value missing");
@@ -245,6 +295,12 @@ class TreeNode {
         }
     }
 
+    /**
+     * Get the attribute object with given name
+     *
+     * @param {string} name - The name to search for
+     * @return {Element} - The attribute object with matching name or null
+     */
     getAttributeByName(name) {
         let atts = this.bodyElement.attributes;
         if (atts && atts.length > 0) {
@@ -257,6 +313,9 @@ class TreeNode {
         return null;
     }
 
+    /**
+     * Delete this attribute node
+     */
     delete() {
         this.parent.bodyElement.removeAttribute(this.bodyElement.name);
         this.parent.ul.removeChild(this.domElement);
@@ -289,9 +348,7 @@ function inspector() {
 }
 
 /**
- * Add link to css file to the header
- *
- * @return void
+ * Add link of css file to the header
  */
 function applyCss() {
     if (!document.getElementById(cssId)) {
@@ -328,41 +385,55 @@ function repackSite() {
 
 }
 
-function buildContextMenu(body) {
-    if (!body) {
+/**
+ * Build visual representation of the context menu
+ *
+ * @param {Element} domPanel - the DOM Panel div element
+ */
+function buildContextMenu(domPanel) {
+    if (!domPanel) {
         console.error("No Body element received.");
         return;
     }
 
+    //Create panel and list
     let contextDiv = document.createElement("div");
     contextDiv.id = contextMenuId;
-    body.appendChild(contextDiv);
+    domPanel.appendChild(contextDiv);
     let contextList = document.createElement("ul");
     contextDiv.appendChild(contextList);
     contextDiv.classList.add(contextMenu);
+
+    //Create menu item1
     let menuItem1 = document.createElement("li");
     contextList.appendChild(menuItem1);
     let span1 = document.createElement("span");
     menuItem1.appendChild(span1);
     span1.classList.add(contextMenuItem);
-    span1.addEventListener("click", function(event) {
-        firstLinkListener(event);
-        cancelEvent(event);
-    });
+
+    //Create menu item2
     let menuItem2 = document.createElement("li");
     contextList.appendChild(menuItem2);
     let span2 = document.createElement("span");
     menuItem2.appendChild(span2);
     span2.classList.add(contextMenuItem);
-    span2.addEventListener("click", function(event) {
-        secondLinkListener(event);
-        cancelEvent(event);
-    });
+
+    //Create menu item3
     let menuItem3 = document.createElement("li");
     contextList.appendChild(menuItem3);
     let span3 = document.createElement("span");
     menuItem3.appendChild(span3);
     span3.classList.add(contextMenuItem);
+
+    //Add Event Listeners
+    span1.addEventListener("click", function(event) {
+        firstLinkListener(event);
+        cancelEvent(event);
+    });
+    span2.addEventListener("click", function(event) {
+        secondLinkListener(event);
+        cancelEvent(event);
+    });
     span3.addEventListener("click", function(event) {
         thirdLinkListener(event);
         cancelEvent(event);
@@ -375,8 +446,6 @@ function buildContextMenu(body) {
  * Skips injected html elements
  * 
  * @param currentNode 
- * @param
- * @return void
  */
 function buildTree(currentNode) {
     if (currentNode.bodyElement === document.body) {
@@ -391,9 +460,8 @@ function buildTree(currentNode) {
 /**
  * Recursive depth-first function to build out our own tree of TreeNode objects
  * 
- * @param {TreeNode} currentNode The current TreeNode that is being processed
- * @param {[Node]} children The children to be processed for currentNode
- * @return void
+ * @param {TreeNode} currentNode - The current TreeNode that is being processed
+ * @param {Element[]} children - The children to be processed for currentNode
  */
 function buildTree2(currentNode, children) {
 
@@ -421,9 +489,9 @@ function buildTree2(currentNode, children) {
 }
 
 /**
- * Function for handling HTML elements
+ * Creates Visual representation in the DOM panel for given element
  *
- * @param {TreeNode} newNode Node created while building tree
+ * @param {TreeNode} newNode - Node created while building tree
  * @return {boolean} returns true if child nodes need to be further processed
  */
 function buildElementGUI(newNode, position) {
@@ -506,15 +574,14 @@ function buildElementGUI(newNode, position) {
     }
 }
 
-/*
+/**
  * Action that is provided when contextMenu action is logged 
  *
- * @param {Event} event THe fired Event
- * @param {TreeNode} newNode The newNode created while building the GUI tree
+ * @param {Event} event - The fired Event
+ * @param {TreeNode} newNode - The node created while building the GUI tree
  */
 function contextAction(event, newNode) {
     event.preventDefault();
-    console.log("Right Clicked");
     let menu = document.getElementById(contextMenuId);
     if (menu.classList.contains(block)) {
         toggleMenuOff();
@@ -522,10 +589,10 @@ function contextAction(event, newNode) {
     toggleMenuOn(event, newNode);
 }
 
-/*
- * Sets correct labels in the Context (right-click) menu based what type of element was clicked
- *
- * @return {void} 
+/**
+ * Sets correct position for context menu 
+ * and correct labels in the Context (right-click) 
+ * menu based what type of element was clicked
  */
 function toggleMenuOn(event, newNode) {
     let menuPosition = getPosition(event);
@@ -583,8 +650,10 @@ function toggleMenuOn(event, newNode) {
     }
 }
 
-/*
+/**
  * Implements the first menu item in the context menu. Executes actions based on the type of element was right clicked
+ *
+ * @param {Event} event - the event to react to
  */
 function firstLinkListener(event) {
     toggleMenuOff();
@@ -612,8 +681,10 @@ function firstLinkListener(event) {
     }
 }
 
-/*
+/**
  * Implements the second menu item in the context menu. Executes actions based on the type of element was right clicked
+ *
+ * @param {Event} event - the event to react to
  */
 function secondLinkListener(event) {
     toggleMenuOff();
@@ -644,8 +715,10 @@ function secondLinkListener(event) {
     }
 }
 
-/*
+/**
  * Implements the third menu item in the context menu. Executes actions based on the type of element was right clicked
+ *
+ * @param {Event} event - the event to react to
  */
 function thirdLinkListener(event) {
     toggleMenuOff();
@@ -682,7 +755,7 @@ function thirdLinkListener(event) {
     }
 }
 
-/*
+/**
  * Hides the right click menu panel.
  */
 function toggleMenuOff() {
@@ -693,8 +766,10 @@ function toggleMenuOff() {
 
 }
 
-/*
- * Togge the tree representation between open and closed 
+/**
+ * Toggle the tree representation between open and closed 
+ * 
+ * @param {TreeNode} elem - The node to toggle
  */
 function toggle(elem) {
     elem.ul.classList.toggle(hidden);
@@ -702,7 +777,7 @@ function toggle(elem) {
     elem.domElement.classList.toggle(collapsibleListClosed);
 }
 
-/*
+/**
  * Highlight the selected element in both the webpage and the DOM tree. 
  *
  * @param {Element} The element to be highlighted
@@ -730,7 +805,7 @@ function select(elem) {
         }
         selectedTreeNode.domElement.firstChild.classList.remove(selected);
     }
-    
+
     if (elem.bodyElement == document.body) {
         document.getElementById(bodyDivId).classList.add(selected);
     } else {
@@ -747,7 +822,7 @@ function select(elem) {
     }
 }
 
-/*
+/**
  * Stop the event from being propagated, so other listeners aren't triggered
  * 
  * @param {Event} the event to stop. 
@@ -756,10 +831,11 @@ function cancelEvent(event) {
     event.stopPropagation();
 }
 
-/**
+/***
  * Check if element is visible in the window
  * Source: https://stackoverflow.com/questions/123999/how-to-tell-if-a-dom-element-is-visible-in-the-current-viewport/7557433#7557433
- *
+ * @param {Element} Element to check
+ * @return {boolean} True if element is visible in the window
  */
 function isElementInViewport(el) {
 
@@ -768,21 +844,25 @@ function isElementInViewport(el) {
     return (
         rect.top >= 0 &&
         rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     );
 }
 
-/*
- * Counts the number of child elements that are either for an element
+/**
+ * Count of children that are Element or Text Nodes + the number of attributes
  *
  * @param {Element} elem The element for which the children should be counted
- * @return {int} The count of children that are valid
+ * @return {int} 
  */
 function childrenCount(elem) {
     return nodeChildCount(elem) + (elem.attributes ? elem.attributes.length : 0);
 }
 
+/**
+ * @param {Element} elem The element for which the children should be counted
+ * @return {int} Count of children that are Element or Text Nodes
+ */
 function nodeChildCount(elem) {
     var result = 0;
 
@@ -790,13 +870,18 @@ function nodeChildCount(elem) {
     if (!elem) return result;
     for (var i = 0; i < elem.childNodes.length; i++) {
         type = elem.childNodes[i].nodeType;
-        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.DOCUMENT_NODE || type == NodeTypes.TEXT_NODE) {
+        if (type == NodeTypes.ELEMENT_NODE || type == NodeTypes.TEXT_NODE) {
             result++;
         }
     }
     return result;
 }
 
+/**
+ * Returns currently selected element
+ *
+ * @return {Element} Currently selected element or null otherwise
+ */
 function getSelectedElement() {
     var selectedElem = document.getElementsByClassName(selected);
     if (selectedElem.length == 0) {
@@ -809,9 +894,16 @@ function getSelectedElement() {
         }
     } else {
         console.error("Invalid state more than one element is selected");
+        window.alert("Invalid state more than one element is selected");
     }
 }
 
+/**
+ * Get the coordinates of an event adjusted for the DOM panel
+ *
+ * @param {Event}
+ * @return X,Y coordinates of the event 
+ */
 function getPosition(e) {
     var posx = 0;
     var posy = 0;
@@ -830,5 +922,4 @@ function getPosition(e) {
     }
 }
 
-//inspector();
 window.onload = inspector;
