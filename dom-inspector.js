@@ -208,6 +208,9 @@ class TreeNode {
         }
         //Class is the first child if there is no id and second if there is
         buildElementGUI(newNode,index);
+        if (nodeChildCount(this.bodyElement) == 0) {
+            if (index > 0 ) this.children[index-1].domElement.classList.remove(lastChildClass);
+        }
     }
 
     setAttributeName(name) {
@@ -259,6 +262,7 @@ class TreeNode {
         this.parent.bodyElement.removeAttribute(this.bodyElement.name);
         this.parent.ul.removeChild(this.domElement);
         this.parent.children.splice(this.parent.children.indexOf(this), 1);
+        this.parent.children[this.parent.children.length-1].domElement.classList.toggle(lastChildClass,true);
     }
 }
 
@@ -404,7 +408,6 @@ function buildTree2(currentNode, children) {
             if (newNode.bodyElement == document.body) {
                 newNode.bodyElement = document.getElementById(bodyDivId);
             }
-            currentNode.children.push(newNode);
             //Add attributes and values
             let atts = newNode.bodyElement.attributes;
             if (atts && atts.length > 0) {
@@ -432,6 +435,7 @@ function buildElementGUI(newNode, position) {
     let li = document.createElement("li");
     newNode.appendToDom(li, position);
     newNode.domElement = li;
+    if (newNode.parent) newNode.parent.children.push(newNode);
     
     if (newNode.type == NodeTypes.TEXT_NODE || newNode.type == NodeTypes.ELEMENT_NODE || newNode.type == NodeTypes.DOCUMENT_NODE) {
         var tag = document.createElement("span");
